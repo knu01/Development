@@ -1,0 +1,894 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>The Last Stand</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Symbols+2&display=swap">
+<style>
+/* Layout: a war table. Board on the left, dispatches on the right; stacks on phones. Single dark look by choice (night siege). */
+:root{
+  --night:#10161b; --keep:#18212a; --line:#2c3944; --bone:#ece4d0; --dim:#9aa5a8;
+  --ember:#e8a23a; --atk:#d9563b; --def:#efe2b8; --sq-a:#8b9187; --sq-b:#4b575a;
+  --display:'Pirata One',Georgia,serif; --body:'Spectral',Georgia,serif; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --glyphs:'Noto Sans Symbols 2','Segoe UI Symbol','Apple Symbols',serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--night);color:var(--bone);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 28px;min-height:100%}
+h1,h2,h3,p{margin:0}
+button{font:inherit;color:var(--bone);background:transparent;border:1px solid var(--line);padding:8px 14px;cursor:pointer;border-radius:2px}
+button:hover{border-color:var(--dim)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+.btn{background:var(--ember);color:#1b1205;border-color:var(--ember);font-family:var(--mono);font-weight:500;letter-spacing:.06em;text-transform:uppercase;font-size:13px;padding:12px 20px}
+.btn:hover{background:#f2b252;border-color:#f2b252}
+.quiet{border:0;color:var(--dim);text-decoration:underline;padding:8px 4px;font-size:14px}
+.rampart{height:22px;margin-inline:-16px;background:
+  repeating-linear-gradient(90deg,var(--line) 0 30px,transparent 30px 60px) top/100% 12px no-repeat,
+  linear-gradient(var(--line),var(--line)) bottom/100% 10px no-repeat}
+.wrap{max-width:1040px;margin:0 auto}
+
+/* Title screen */
+.titlebar{padding:44px 0 26px;display:grid;gap:12px;max-width:640px}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ember)}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(52px,12vw,104px);line-height:.92;text-wrap:balance}
+.lede{font-size:19px;color:#cfc8b6;max-width:46ch}
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-bottom:26px}
+.role{background:var(--keep);border:1px solid var(--line);padding:18px 18px 16px;display:grid;gap:8px;min-width:0}
+.role h2{font-family:var(--display);font-weight:400;font-size:34px;line-height:1}
+.role.atk h2{color:var(--atk)} .role.def h2{color:var(--def)}
+.role .sub{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.role p{color:#cfc8b6}
+.role label{font-family:var(--mono);font-size:12px;color:var(--dim);display:grid;gap:4px;margin-top:6px}
+.role input{background:var(--night);border:1px solid var(--line);color:var(--bone);font:inherit;font-size:16px;padding:8px 10px;border-radius:2px;width:100%}
+.setup{border:0;padding:0;margin:0 0 22px;display:grid;gap:18px}
+.setup legend{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);padding:0;margin-bottom:8px}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button[aria-pressed="true"]{background:var(--bone);color:#161b20;border-color:var(--bone)}
+.go{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+
+/* Game screen */
+.gamebar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:14px 0}
+.brand{font-family:var(--display);font-size:26px}
+.tools{display:flex;flex-wrap:wrap;gap:8px}
+.tools button{font-size:13px;padding:6px 10px}
+.layout{display:grid;grid-template-columns:minmax(0,640px) minmax(260px,1fr);gap:24px;align-items:start}
+@media (max-width:860px){.layout{grid-template-columns:minmax(0,1fr)}}
+.boardwrap{position:relative;width:100%;max-width:640px;border:8px solid var(--keep);outline:1px solid var(--line)}
+.board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));aspect-ratio:1;container-type:inline-size;user-select:none;-webkit-user-select:none}
+.sq{position:relative;display:grid;place-items:center;cursor:pointer;font-family:var(--glyphs);font-size:clamp(24px,8vw,52px);font-size:8.6cqw;line-height:1;min-width:0}
+.sq.l{background:var(--sq-a)} .sq.d{background:var(--sq-b)}
+.pc{pointer-events:none;text-shadow:0 0 1px #000,1px 0 0 #000,-1px 0 0 #000,0 1px 0 #000,0 -1px 0 #000,0 2px 3px rgba(0,0,0,.45)}
+.pc.w{color:var(--atk)} .pc.b{color:var(--def)}
+.sq.last::before{content:"";position:absolute;inset:0;background:rgba(232,162,58,.32)}
+.sq.sel{box-shadow:inset 0 0 0 3px var(--ember)}
+.sq.chk::before{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(217,60,40,.85),rgba(217,60,40,0) 72%)}
+.sq.dot::after{content:"";position:absolute;width:26%;aspect-ratio:1;border-radius:50%;background:rgba(16,22,27,.55)}
+.sq.cap::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 4px rgba(16,22,27,.7)}
+.co{position:absolute;font-family:var(--mono);font-size:clamp(8px,1.9cqw,11px);line-height:1;color:rgba(16,22,27,.7);pointer-events:none}
+.co.f{right:3px;bottom:3px} .co.r{left:3px;top:3px}
+.fx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.ghost{position:absolute;width:12.5%;aspect-ratio:1;display:grid;place-items:center;font-family:var(--glyphs);font-size:7cqw;font-size:clamp(24px,8vw,50px);opacity:0;animation:rise 2.8s ease-out forwards}
+.ghost.w{color:var(--atk)} .ghost.b{color:var(--def)}
+.ghost{text-shadow:0 0 6px currentColor,0 0 1px #000}
+@keyframes rise{0%{opacity:.95;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-70%) scale(1.25)}}
+.bubble{position:absolute;max-width:min(250px,68%);background:var(--bone);color:#161b20;font-style:italic;font-size:15px;line-height:1.3;padding:8px 11px;border-radius:2px 10px 10px 10px;z-index:4;box-shadow:0 4px 14px rgba(0,0,0,.45);border-left:4px solid var(--ember);animation:pop 4.2s ease forwards}
+.bubble.w{border-left-color:var(--atk)} .bubble.b{border-left-color:#c9b36a}
+.bubble small{display:block;font-family:var(--mono);font-style:normal;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#5d6769;margin-bottom:2px}
+@keyframes pop{0%{opacity:0;transform:translateY(8px)}8%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+
+.panel{display:grid;gap:18px;min-width:0}
+.turn{display:flex;align-items:center;gap:14px;background:var(--keep);border:1px solid var(--line);padding:12px 16px}
+.dot{width:16px;height:16px;border-radius:50%;flex:none;background:var(--atk);box-shadow:0 0 12px currentColor;color:var(--atk)}
+.turn.d .dot{background:var(--def);color:var(--def)}
+.turn b{display:block;font-family:var(--display);font-weight:400;font-size:28px;line-height:1.05}
+.turn small{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--dim);text-transform:uppercase}
+.status{min-height:1.5em;color:var(--ember);font-family:var(--mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+.panel h3{font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.row{display:flex;flex-wrap:wrap;gap:2px;min-height:30px;font-family:var(--glyphs);font-size:24px;line-height:1}
+.row span.w{color:var(--atk)} .row span.b{color:var(--def)}
+.row span{text-shadow:0 0 1px #000,1px 0 0 #000,-1px 0 0 #000,0 1px 0 #000,0 -1px 0 #000}
+.log{list-style:none;margin:0;padding:0;max-height:300px;overflow:auto;display:grid;gap:8px;border-top:1px solid var(--line);padding-top:8px}
+.log li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;align-items:start;font-size:15px}
+.log li .g{font-family:var(--glyphs);font-size:22px;line-height:1}
+.log li .g.w{color:var(--atk)} .log li .g.b{color:var(--def)}
+.log li em{display:block}
+.log li small{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.04em}
+.log li.sys{display:block;color:var(--dim);font-style:italic}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+
+/* Overlays */
+.modal{position:fixed;inset:0;z-index:40;background:rgba(6,9,12,.82);display:grid;place-items:center;padding:20px}
+.card{background:var(--keep);border:1px solid var(--line);padding:24px;max-width:460px;width:100%;display:grid;gap:14px;text-align:left}
+.card h2{font-family:var(--display);font-weight:400;font-size:42px;line-height:1}
+.card p{color:#cfc8b6}
+.picks{display:flex;gap:10px;flex-wrap:wrap}
+.picks button{font-family:var(--glyphs);font-size:40px;line-height:1;padding:8px 14px;background:var(--sq-b)}
+.picks button.w{color:var(--atk)} .picks button.b{color:var(--def)}
+
+/* Opening cinematic */
+#s-cinema{position:fixed;inset:0;z-index:50;background:#05080b}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block}
+.bars::before,.bars::after{content:"";position:absolute;left:0;right:0;height:9%;background:#000;z-index:2}
+.bars::before{top:0} .bars::after{bottom:0}
+.subtitle{position:absolute;left:0;right:0;bottom:calc(11% + env(safe-area-inset-bottom,0px));z-index:3;text-align:center;font-family:var(--display);font-size:clamp(24px,5.2vw,48px);line-height:1.1;padding:0 max(18px,env(safe-area-inset-left,0px));text-shadow:0 2px 12px #000,0 0 3px #000;text-wrap:balance;transition:opacity .6s}
+.subtitle.small{font-family:var(--body);font-style:italic;font-size:clamp(18px,3.6vw,30px)}
+.cine-tools{position:absolute;z-index:4;right:max(14px,env(safe-area-inset-right,0px));top:calc(9% + 10px + env(safe-area-inset-top,0px));display:flex;gap:10px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--dim)}
+.cine-tools button{background:rgba(5,8,11,.6);font-size:13px}
+@media (prefers-reduced-motion:reduce){.ghost,.bubble{animation-duration:.01s}}
+</style>
+
+<main class="wrap" id="app">
+
+<section id="s-title" class="screen">
+  <div class="rampart" aria-hidden="true"></div>
+  <header class="titlebar">
+    <p class="kicker">A siege played on 64 squares</p>
+    <h1>The Last Stand</h1>
+    <p class="lede">One side storms the walls. The other holds the king. Every piece that falls has something to say about it.</p>
+  </header>
+  <div class="roles">
+    <article class="role atk">
+      <h2>Attackers</h2>
+      <p class="sub">Crimson banners · march first</p>
+      <p>Break the line, cut down the guard, and corner the king before dawn.</p>
+      <label for="nameA">Commander's name<input id="nameA" type="text" maxlength="18" value="Attacker" autocomplete="off"></label>
+    </article>
+    <article class="role def">
+      <h2>Defenders</h2>
+      <p class="sub">Ivory banners · hold the keep</p>
+      <p>Bleed them at every gate. Trade pieces for time, and keep the king alive.</p>
+      <label for="nameD">Captain's name<input id="nameD" type="text" maxlength="18" value="Defender" autocomplete="off"></label>
+    </article>
+  </div>
+  <fieldset class="setup">
+    <div><legend>Who is playing</legend>
+      <div class="seg" id="segMode">
+        <button type="button" data-v="two" aria-pressed="true">Two players, one screen</button>
+        <button type="button" data-v="solo-a" aria-pressed="false">Solo, I attack</button>
+        <button type="button" data-v="solo-d" aria-pressed="false">Solo, I defend</button>
+      </div></div>
+    <div><legend>Watch the opening from</legend>
+      <div class="seg" id="segPov">
+        <button type="button" data-v="def" aria-pressed="true">The walls</button>
+        <button type="button" data-v="atk" aria-pressed="false">The siege line</button>
+      </div></div>
+  </fieldset>
+  <div class="go">
+    <button class="btn" id="btnBegin" type="button">Begin the siege</button>
+    <button class="quiet" id="btnSkipStart" type="button">Skip the opening</button>
+  </div>
+</section>
+
+<section id="s-game" class="screen" hidden>
+  <div class="rampart" aria-hidden="true"></div>
+  <div class="gamebar">
+    <span class="brand">The Last Stand</span>
+    <div class="tools">
+      <button id="btnMenu" type="button">Menu</button>
+      <button id="btnFlip" type="button">Flip board</button>
+      <button id="btnSound" type="button" aria-pressed="true">Sound on</button>
+      <button id="btnIntro" type="button">Replay opening</button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="boardwrap">
+      <div id="board" class="board" role="grid" aria-label="Chess board"></div>
+      <div id="fx" class="fx"></div>
+    </div>
+    <aside class="panel">
+      <div class="turn" id="turn"><span class="dot"></span><div><b id="turnName"></b><small id="turnSub"></small></div></div>
+      <p id="status" class="status" role="status"></p>
+      <div>
+        <h3>Fallen attackers</h3><div id="fallA" class="row"></div>
+        <h3 style="margin-top:12px">Fallen defenders</h3><div id="fallD" class="row"></div>
+      </div>
+      <div><h3>Dispatches</h3><ol id="log" class="log"></ol></div>
+      <div class="actions">
+        <button id="btnResign" type="button">Surrender</button>
+        <button id="btnNew" type="button">New siege</button>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section id="s-cinema" class="screen" hidden>
+  <canvas id="cv"></canvas>
+  <div class="bars"></div>
+  <p id="sub" class="subtitle"></p>
+  <div class="cine-tools"><span id="cineTime"></span><button id="btnSkip" type="button">Skip opening</button></div>
+</section>
+
+<div id="promo" class="modal" hidden>
+  <div class="card"><h2>Promotion</h2><p>Your soldier reached the far wall. Choose what it becomes.</p><div class="picks" id="picks"></div></div>
+</div>
+<div id="end" class="modal" hidden>
+  <div class="card"><h2 id="endTitle"></h2><p id="endText"></p>
+    <div class="actions"><button class="btn" id="btnAgain" type="button">Fight again</button><button id="btnLook" type="button">Study the board</button></div></div>
+</div>
+
+</main>
+
+<script>
+"use strict";
+/* ===== Chess engine: board is 64 cells, index 0 = a8, 63 = h1. 'w' = attackers, 'b' = defenders ===== */
+const FILES = 'abcdefgh';
+const VAL = { P: 1, N: 3, B: 3, R: 5, Q: 9, K: 4 };
+const NAME = { P: 'pawn', N: 'knight', B: 'bishop', R: 'rook', Q: 'queen', K: 'king' };
+const GLYPH = { K: '♚', Q: '♛', R: '♜', B: '♝', N: '♞', P: '♟' };
+const TXT = '︎';
+const KN = [[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]];
+const KG = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+const DIAG = [[1,1],[1,-1],[-1,1],[-1,-1]];
+const ORTH = [[1,0],[-1,0],[0,1],[0,-1]];
+const sqName = i => FILES[i % 8] + (8 - (i >> 3));
+const inB = (x, y) => x >= 0 && x < 8 && y >= 0 && y < 8;
+
+function initState() {
+  const b = Array(64).fill(null), back = 'RNBQKBNR';
+  for (let f = 0; f < 8; f++) {
+    b[f] = 'b' + back[f]; b[8 + f] = 'bP';
+    b[48 + f] = 'wP'; b[56 + f] = 'w' + back[f];
+  }
+  return { board: b, turn: 'w', castle: { wK: 1, wQ: 1, bK: 1, bQ: 1 }, ep: -1, half: 0, full: 1 };
+}
+
+function attacked(b, sq, by) {
+  const x = sq % 8, y = sq >> 3, py = by === 'w' ? y + 1 : y - 1;
+  for (const dx of [-1, 1]) if (inB(x + dx, py) && b[py * 8 + x + dx] === by + 'P') return true;
+  for (const [dx, dy] of KN) if (inB(x + dx, y + dy) && b[(y + dy) * 8 + x + dx] === by + 'N') return true;
+  for (const [dx, dy] of KG) if (inB(x + dx, y + dy) && b[(y + dy) * 8 + x + dx] === by + 'K') return true;
+  const ray = (dirs, a, c) => {
+    for (const [dx, dy] of dirs) {
+      let nx = x + dx, ny = y + dy;
+      while (inB(nx, ny)) {
+        const p = b[ny * 8 + nx];
+        if (p) { if (p[0] === by && (p[1] === a || p[1] === c)) return true; break; }
+        nx += dx; ny += dy;
+      }
+    }
+    return false;
+  };
+  return ray(DIAG, 'B', 'Q') || ray(ORTH, 'R', 'Q');
+}
+
+function pseudo(s) {
+  const b = s.board, t = s.turn, opp = t === 'w' ? 'b' : 'w', out = [];
+  for (let i = 0; i < 64; i++) {
+    const p = b[i];
+    if (!p || p[0] !== t) continue;
+    const k = p[1], x = i % 8, y = i >> 3;
+    const add = (to, extra) => out.push(Object.assign({ from: i, to, piece: p, cap: b[to] }, extra || {}));
+    if (k === 'P') {
+      const dir = t === 'w' ? -1 : 1, start = t === 'w' ? 6 : 1, last = t === 'w' ? 0 : 7;
+      const push = to => { if ((to >> 3) === last) for (const pr of 'QRBN') add(to, { promo: pr }); else add(to); };
+      const one = i + dir * 8;
+      if (inB(x, y + dir) && !b[one]) {
+        push(one);
+        if (y === start && !b[one + dir * 8]) add(one + dir * 8, { double: true });
+      }
+      for (const dx of [-1, 1]) {
+        if (!inB(x + dx, y + dir)) continue;
+        const to = (y + dir) * 8 + x + dx;
+        if (b[to] && b[to][0] === opp) push(to);
+        else if (to === s.ep) add(to, { ep: true, cap: b[i + dx] });
+      }
+    } else if (k === 'N' || k === 'K') {
+      for (const [dx, dy] of (k === 'N' ? KN : KG)) {
+        if (!inB(x + dx, y + dy)) continue;
+        const to = (y + dy) * 8 + x + dx;
+        if (!b[to] || b[to][0] === opp) add(to);
+      }
+      if (k === 'K') {
+        const home = t === 'w' ? 60 : 4;
+        if (i === home && !attacked(b, home, opp)) {
+          if (s.castle[t + 'K'] && !b[home + 1] && !b[home + 2] && b[home + 3] === t + 'R' &&
+              !attacked(b, home + 1, opp) && !attacked(b, home + 2, opp)) add(home + 2, { castle: 'K' });
+          if (s.castle[t + 'Q'] && !b[home - 1] && !b[home - 2] && !b[home - 3] && b[home - 4] === t + 'R' &&
+              !attacked(b, home - 1, opp) && !attacked(b, home - 2, opp)) add(home - 2, { castle: 'Q' });
+        }
+      }
+    } else {
+      const dirs = k === 'B' ? DIAG : k === 'R' ? ORTH : DIAG.concat(ORTH);
+      for (const [dx, dy] of dirs) {
+        let nx = x + dx, ny = y + dy;
+        while (inB(nx, ny)) {
+          const to = ny * 8 + nx;
+          if (!b[to]) add(to);
+          else { if (b[to][0] === opp) add(to); break; }
+          nx += dx; ny += dy;
+        }
+      }
+    }
+  }
+  return out;
+}
+
+function apply(s, m) {
+  const b = s.board.slice(), t = s.turn, castle = Object.assign({}, s.castle);
+  b[m.from] = null;
+  b[m.to] = m.promo ? t + m.promo : m.piece;
+  if (m.ep) b[m.from - (m.from % 8) + (m.to % 8)] = null;
+  if (m.castle === 'K') { b[m.to - 1] = b[m.to + 1]; b[m.to + 1] = null; }
+  if (m.castle === 'Q') { b[m.to + 1] = b[m.to - 2]; b[m.to - 2] = null; }
+  if (m.piece[1] === 'K') { castle[t + 'K'] = 0; castle[t + 'Q'] = 0; }
+  const rooks = { 0: 'bQ', 7: 'bK', 56: 'wQ', 63: 'wK' };
+  if (rooks[m.from]) castle[rooks[m.from]] = 0;
+  if (rooks[m.to]) castle[rooks[m.to]] = 0;
+  return {
+    board: b, turn: t === 'w' ? 'b' : 'w', castle,
+    ep: m.double ? (m.from + m.to) / 2 : -1,
+    half: (m.piece[1] === 'P' || m.cap) ? 0 : s.half + 1,
+    full: s.full + (t === 'b' ? 1 : 0)
+  };
+}
+
+const kingSq = (b, c) => b.indexOf(c + 'K');
+function legal(s) {
+  return pseudo(s).filter(m => {
+    const n = apply(s, m);
+    return !attacked(n.board, kingSq(n.board, s.turn), n.turn);
+  });
+}
+function inCheck(s) {
+  return attacked(s.board, kingSq(s.board, s.turn), s.turn === 'w' ? 'b' : 'w');
+}
+function insufficient(s) {
+  const rest = s.board.filter(p => p && p[1] !== 'K');
+  return rest.length === 0 || (rest.length === 1 && (rest[0][1] === 'N' || rest[0][1] === 'B'));
+}
+/* After a capture, can the victim's side take back on that square? (state.turn is the victim's side) */
+function canRecapture(afterState, sq) {
+  return legal(afterState).some(m => m.to === sq && m.cap);
+}
+/* ===== Reactions: what a piece says when it falls ===== */
+const LINES = {
+  honored: ["I leave the rest in your hands, everyone.", "That was a fair trade. Finish what I started.", "Worth every step. Don't waste it.", "I took one of them with me. Your move.", "Tell {king} I stood my ground."],
+  free: ["Nobody had my back out here...", "Was I left alone? Again?", "I walked straight into that one.", "Someone should have covered me."],
+  robbed: ["Beaten by a {by}? I'll never live this down.", "A {by}?! That's embarrassing.", "Not like this. Not to a {by}."],
+  queen: ["The queen falls. Do not let it be for nothing.", "Remember me when it counts.", "Without me, you'll have to be sharper.", "Long live {king}. I'm done."],
+  pawn: ["Tell my mother I held the line.", "Small step, big sacrifice.", "Pawns fall first. Pawns also remember.", "I was just getting started..."],
+  enpassant: ["I never saw that coming.", "Wait, you can do that?!", "Cheap trick. Respect."],
+  trade: ["Even trade. The fight goes on.", "I'll see you on the other side.", "It had to be someone. It was me."],
+  N: ["My last leap. Make it count.", "I always did hate the corners."],
+  B: ["Walk the diagonals for me.", "I saw it coming from three squares away."],
+  R: ["The wall is down. Hold what's left.", "A rook never retreats. A rook never gets the chance."]
+};
+const CHECK_LINES = ["Steel at my throat. Someone do something!", "They're at the gate!", "Guards, to me!", "Careful. One more step and I fall."];
+const CASTLE_LINES = ["Into the keep. Close the gates.", "Fortify. Every stone counts."];
+const PROMO_LINES = ["From the mud to the throne!", "Nobody laughs at the pawn now."];
+const kingTitle = c => c === 'w' ? 'the Warlord' : 'the King';
+const lastUsed = {};
+function pickLine(cat, list) {
+  let i = Math.floor(Math.random() * list.length);
+  if (list.length > 1 && lastUsed[cat] === i) i = (i + 1) % list.length;
+  lastUsed[cat] = i;
+  return list[i];
+}
+function fill(text, victimColor, capturer) {
+  return text.replace('{king}', kingTitle(victimColor)).replace('{by}', capturer ? NAME[capturer[1]] : 'foe');
+}
+/* ev: { victim, capturer, prev (previous move record), recapture (bool), ep (bool), toSq } */
+function reactionFor(ev) {
+  const v = ev.victim[1], vc = ev.victim[0], cap = ev.capturer;
+  let cat, list;
+  if (ev.prev && ev.prev.color === vc && ev.prev.cap && ev.prev.to === ev.toSq) { cat = 'honored'; list = LINES.honored; }
+  else if (ev.ep) { cat = 'enpassant'; list = LINES.enpassant; }
+  else if (v === 'Q') { cat = 'queen'; list = LINES.queen; }
+  else if (VAL[cap[1]] + 1 < VAL[v]) { cat = 'robbed'; list = LINES.robbed; }
+  else if (!ev.recapture && v !== 'P') { cat = 'free'; list = LINES.free; }
+  else if (v === 'P') { cat = 'pawn'; list = LINES.pawn; }
+  else if (ev.recapture && Math.random() < 0.5) { cat = 'trade'; list = LINES.trade; }
+  else { cat = v; list = LINES[v] || LINES.trade; }
+  return { cat, text: fill(pickLine(cat, list), vc, cap) };
+}
+/* ===== Sound: small synthesized effects, started only after a click ===== */
+const Snd = {
+  ctx: null, on: true, drone: null,
+  init() {
+    if (!this.ctx) { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { this.ctx = null; } }
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+  },
+  tone(f, d, type, v, when, slide) {
+    if (!this.on || !this.ctx) return;
+    const c = this.ctx, t = c.currentTime + (when || 0), o = c.createOscillator(), g = c.createGain();
+    o.type = type || 'sine'; o.frequency.setValueAtTime(f, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + d);
+    g.gain.setValueAtTime(v || 0.08, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + d + 0.03);
+  },
+  noise(d, v, when, freq) {
+    if (!this.on || !this.ctx) return;
+    const c = this.ctx, n = Math.floor(c.sampleRate * d), buf = c.createBuffer(1, n, c.sampleRate), data = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / n);
+    const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t = c.currentTime + (when || 0);
+    src.buffer = buf; f.type = 'lowpass'; f.frequency.value = freq || 900; g.gain.value = v || 0.1;
+    src.connect(f); f.connect(g); g.connect(c.destination); src.start(t);
+  },
+  move() { this.tone(190, 0.12, 'triangle', 0.1, 0, 95); },
+  capture() { this.noise(0.28, 0.16, 0, 1400); this.tone(120, 0.32, 'sawtooth', 0.06, 0, 50); },
+  check() { this.tone(330, 0.18, 'square', 0.04); this.tone(311, 0.35, 'square', 0.04, 0.16); },
+  drum(when) { this.tone(95, 0.4, 'sine', 0.3, when, 40); this.noise(0.12, 0.05, when, 300); },
+  horn() { this.tone(110, 1.8, 'sawtooth', 0.05, 0, 104); this.tone(165, 1.8, 'sawtooth', 0.03, 0, 156); },
+  startDrone() {
+    if (!this.on || !this.ctx || this.drone) return;
+    const c = this.ctx, o = c.createOscillator(), f = c.createBiquadFilter(), g = c.createGain();
+    o.type = 'sawtooth'; o.frequency.value = 55; f.type = 'lowpass'; f.frequency.value = 160;
+    g.gain.setValueAtTime(0.0001, c.currentTime); g.gain.exponentialRampToValueAtTime(0.07, c.currentTime + 3);
+    o.connect(f); f.connect(g); g.connect(c.destination); o.start();
+    this.drone = { o, g };
+  },
+  stopDrone() {
+    if (!this.drone || !this.ctx) { this.drone = null; return; }
+    const { o, g } = this.drone, t = this.ctx.currentTime;
+    g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
+    o.stop(t + 1.3); this.drone = null;
+  }
+};
+/* ===== Opening cinematic: about one minute, first person, drawn on a canvas ===== */
+const SCRIPTS = {
+  def: [
+    [2, 6.5, "Night. The third watch.", 1],
+    [8, 14, "Torches on the horizon."],
+    [16, 23, "They are marching. All of them."],
+    [25, 31, "Ranks form at the border."],
+    [33, 39, "Archers to the parapet. Knights to the gate."],
+    [41, 47, "Pawns, hold the front. Rooks, you are the walls."],
+    [49, 55, "Behind you, the king watches from the keep."],
+    [56, 64, "It's all in your hands, chief. Defend the king."]
+  ],
+  atk: [
+    [2, 6.5, "Four hours before dawn.", 1],
+    [8, 14, "The walls of the keep are in sight."],
+    [16, 23, "Their torches burn low. Their guard is thin."],
+    [25, 31, "The army forms behind you, waiting for your word."],
+    [33, 39, "Banners up. Horns ready."],
+    [41, 47, "Pawns first. Then the knights. Then the rest."],
+    [49, 55, "Somewhere behind those walls, their king sleeps."],
+    [56, 64, "It's all in your hands, chief. Take the king."]
+  ]
+};
+const CINE_LEN = 64;
+const Cine = (() => {
+  const cv = document.getElementById('cv'), g = cv.getContext('2d');
+  const subEl = document.getElementById('sub'), timeEl = document.getElementById('cineTime'), root = document.getElementById('s-cinema');
+  let raf = 0, W = 0, H = 0, pov = 'def', t0 = 0, cb = null, running = false, nextDrum = 14, horn1 = false, horn2 = false, shown = -1;
+  let stars = [], torches = [], embers = [];
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const ramp = (t, a, b) => clamp((t - a) / (b - a), 0, 1);
+  const ease = p => p * p * (3 - 2 * p);
+  const TAU = Math.PI * 2;
+  function rng(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function build() {
+    const r = rng(7);
+    stars = Array.from({ length: 130 }, () => ({ x: r(), y: r() * 0.55, s: r() * 1.4 + 0.4, f: r() * 2 + 0.5, p: r() * 6 }));
+    torches = [];
+    for (let k = 0; k < 14; k++) for (let c = 0; c < 26; c++) torches.push({ k, c, X: (c - 12.5) * 4.6 + (r() - 0.5) * 2, Z0: 70 + k * 4.4 + (r() - 0.5) * 2, ph: r() * 6 });
+    embers = Array.from({ length: 70 }, () => ({ x: r(), y: r(), v: r() * 0.03 + 0.01, s: r() * 1.6 + 0.6, p: r() * 6 }));
+  }
+  function size() {
+    const d = Math.min(window.devicePixelRatio || 1, 2);
+    W = cv.clientWidth; H = cv.clientHeight; cv.width = W * d; cv.height = H * d; g.setTransform(d, 0, 0, d, 0, 0);
+  }
+  const flick = (t, ph) => 0.78 + 0.14 * Math.sin(t * 17 + ph) + 0.08 * Math.sin(t * 29 + ph * 2);
+  /* A lit torch: soft light on the stone plus a small flame */
+  function torch(x, y, v, t, ph, sc) {
+    const fl = flick(t, ph), fh = H * 0.05 * (sc || 1);
+    g.save(); g.globalCompositeOperation = 'lighter';
+    const gr = g.createRadialGradient(x, y - fh, 0, x, y - fh, fh * 7);
+    gr.addColorStop(0, `rgba(255,150,50,${0.34 * v * fl})`); gr.addColorStop(1, 'rgba(255,150,50,0)');
+    g.fillStyle = gr; g.fillRect(x - fh * 7, y - fh * 8, fh * 14, fh * 14);
+    g.fillStyle = `rgba(255,120,30,${0.9 * v})`; g.beginPath(); g.ellipse(x, y - fh * 0.6, fh * 0.28 * fl, fh * 0.62 * fl, 0, 0, TAU); g.fill();
+    g.fillStyle = `rgba(255,230,170,${0.95 * v})`; g.beginPath(); g.ellipse(x, y - fh * 0.45, fh * 0.13, fh * 0.34 * fl, 0, 0, TAU); g.fill();
+    g.restore();
+    g.fillStyle = '#1d140d'; g.fillRect(x - fh * 0.08, y, fh * 0.16, fh * 0.9);
+  }
+  function flag(x, y, w, h, t, ph, a) {
+    const wave = Math.sin(t * 3 + ph) * w * 0.18;
+    g.fillStyle = `rgba(184,64,43,${a})`; g.beginPath();
+    g.moveTo(x, y); g.lineTo(x + w + wave, y + h * 0.5); g.lineTo(x, y + h); g.closePath(); g.fill();
+  }
+  /* Defender view: the enemy's torches roll in from the dark and halt at the border */
+  function enemy(t, hy, f) {
+    const p = ease(ramp(t, 6, 34)), halt = 1 - ramp(t, 30, 34), banners = [];
+    g.save(); g.globalCompositeOperation = 'lighter';
+    for (const o of torches) {
+      const d = 7 + (13 - o.k) * 0.25, vis = ramp(t, d, d + 1.2);
+      if (!vis) continue;
+      const Z = o.Z0 - 28 * p, X = o.X + Math.sin(t * 1.3 + o.ph) * 0.4;
+      const x = W / 2 + X / Z * f, y = hy + 7 / Z * f + Math.abs(Math.sin(t * 4 + o.ph)) * f / Z * 0.3 * halt;
+      if (x < -30 || x > W + 30) continue;
+      const r = f / Z * 0.22, fl = 0.75 + 0.25 * Math.sin(t * 9 + o.ph * 3);
+      g.fillStyle = `rgba(255,150,50,${0.2 * fl * vis})`; g.beginPath(); g.arc(x, y, r * 4, 0, TAU); g.fill();
+      g.fillStyle = `rgba(255,225,160,${0.9 * fl * vis})`; g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill();
+      if (o.k % 4 === 3 && o.c % 9 === 4) banners.push({ x, y, Z, vis, ph: o.ph });
+    }
+    g.restore();
+    for (const b of banners) {
+      const hh = f / b.Z * 5.5;
+      g.strokeStyle = `rgba(30,22,18,${b.vis})`; g.lineWidth = Math.max(1, f / b.Z * 0.18);
+      g.beginPath(); g.moveTo(b.x, b.y); g.lineTo(b.x, b.y - hh); g.stroke();
+      flag(b.x, b.y - hh, f / b.Z * 3.2, f / b.Z * 2, t, b.ph, 0.9 * b.vis);
+    }
+  }
+  /* Defender view: the parapet you stand on, torches, and the line forming beside you */
+  function wall(t) {
+    const top = H * 0.745, mw = W / 8, gap = mw * 0.5, mh = H * 0.065, a = ramp(t, 41, 45);
+    if (a > 0) {
+      g.fillStyle = `rgba(6,9,12,${a})`; g.strokeStyle = `rgba(6,9,12,${a})`; g.lineWidth = Math.max(2, H * 0.004);
+      for (const fx of [0.2, 0.29, 0.5, 0.71, 0.8]) {
+        const x = W * fx, bw = H * 0.03, bh = H * 0.1;
+        g.fillRect(x - bw / 2, top - bh, bw, bh + 2);
+        g.beginPath(); g.arc(x, top - bh - bw * 0.45, bw * 0.45, 0, TAU); g.fill();
+        g.beginPath(); g.moveTo(x + bw, top + 4); g.lineTo(x + bw, top - bh - H * 0.07); g.stroke();
+      }
+    }
+    const gr = g.createLinearGradient(0, top, 0, H); gr.addColorStop(0, '#151c22'); gr.addColorStop(1, '#060a0d');
+    g.fillStyle = gr; g.fillRect(-20, top, W + 40, H - top + 20);
+    g.fillStyle = '#10171c';
+    for (let x = -mw * 0.25; x < W + mw; x += mw) g.fillRect(x, top - mh, mw - gap, mh + 2);
+    g.strokeStyle = 'rgba(255,255,255,0.045)'; g.lineWidth = 1;
+    for (let y = top + H * 0.045; y < H; y += H * 0.05) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
+    for (const [fx, at] of [[0.1, 0], [0.9, 0], [0.34, 33], [0.66, 35], [0.5, 37]]) {
+      const v = ramp(t, at, at + 1.5); if (v > 0) torch(W * fx, top - mh * 0.15, v, t, fx * 10);
+    }
+  }
+  /* Attacker view: the keep on its hill, growing as you march */
+  function castle(t, hy) {
+    const q = ramp(t, 4, 56), s = 0.4 + 1.1 * q * (2 - q), cx = W / 2 + Math.sin(t * 0.2) * W * 0.01;
+    const wc = W * 0.55 * s, hw = H * 0.1 * s, base = hy + H * 0.02;
+    g.fillStyle = '#070b0f'; g.beginPath(); g.ellipse(cx, base + hw * 0.1, wc * 0.62, hw * 0.55, 0, 0, TAU); g.fill();
+    g.fillStyle = '#0b1015';
+    g.fillRect(cx - wc / 2, base - hw, wc, hw);
+    const n = 18, mwid = wc / n * 0.55;
+    for (let i = 0; i < n; i++) g.fillRect(cx - wc / 2 + i * wc / n, base - hw - hw * 0.14, mwid, hw * 0.15);
+    for (const sd of [-1, 1]) {
+      const tw = wc * 0.11, th = hw * 1.8, tx = cx + sd * wc * 0.5 - tw / 2;
+      g.fillRect(tx, base - th, tw, th);
+      g.beginPath(); g.moveTo(tx - tw * 0.15, base - th); g.lineTo(tx + tw / 2, base - th - tw * 0.9); g.lineTo(tx + tw * 1.15, base - th); g.fill();
+    }
+    const kw = wc * 0.17, kh = hw * 3;
+    g.fillRect(cx - kw / 2, base - kh, kw, kh);
+    g.beginPath(); g.moveTo(cx - kw * 0.6, base - kh); g.lineTo(cx, base - kh - kw * 0.8); g.lineTo(cx + kw * 0.6, base - kh); g.fill();
+    g.save(); g.globalCompositeOperation = 'lighter';
+    for (const wy of [0.55, 0.75]) {
+      const fl = flick(t, wy * 10);
+      g.fillStyle = `rgba(255,170,70,${0.85 * fl})`; g.fillRect(cx - kw * 0.09, base - kh * wy, kw * 0.18, kh * 0.07);
+    }
+    const gate = g.createRadialGradient(cx, base - hw * 0.2, 0, cx, base - hw * 0.2, hw * 0.9);
+    gate.addColorStop(0, 'rgba(255,150,50,0.35)'); gate.addColorStop(1, 'rgba(255,150,50,0)');
+    g.fillStyle = gate; g.fillRect(cx - hw, base - hw * 1.2, hw * 2, hw * 1.4);
+    g.restore();
+    g.fillStyle = '#1a1208'; g.fillRect(cx - wc * 0.035, base - hw * 0.5, wc * 0.07, hw * 0.5);
+    for (let i = 1; i < 8; i++) if (i !== 4) torch(cx - wc / 2 + i * wc / 8, base - hw * 1.02, 1, t, i * 3.1, s * 0.22);
+  }
+  /* Attacker view: your own army, spears and banners, at your back */
+  function army(t) {
+    const r = rng(11);
+    for (const [bf, hf, n] of [[0.84, 0.13, 30], [0.95, 0.23, 20]]) {
+      const base = H * bf;
+      g.fillStyle = '#04070a'; g.strokeStyle = '#04070a'; g.lineWidth = Math.max(1.5, H * 0.003);
+      g.fillRect(-20, base, W + 40, H - base + 20);
+      for (let i = 0; i < n; i++) {
+        const x = (i + 0.5 + (r() - 0.5) * 0.5) * W / n, bob = Math.sin(t * 3 + i * 1.7) * H * 0.004, h = H * hf * (0.85 + r() * 0.3);
+        g.beginPath(); g.moveTo(x, base + bob); g.lineTo(x, base + bob - h); g.stroke();
+        g.beginPath(); g.moveTo(x - 3, base + bob - h); g.lineTo(x, base + bob - h - 9); g.lineTo(x + 3, base + bob - h); g.fill();
+        g.beginPath(); g.arc(x, base + bob - H * 0.012, H * 0.011, 0, TAU); g.fill();
+        if (i % 7 === 3) flag(x, base + bob - h, H * 0.07, H * 0.055, t, i, 0.95);
+      }
+    }
+    const v = ramp(t, 2, 4);
+    torch(W * 0.1, H * 0.84, v, t, 1.3, 1.1); torch(W * 0.9, H * 0.82, v, t, 4.1, 1.1);
+  }
+  function draw(t) {
+    const hy = H * 0.56, f = H * 0.9, p = ramp(t, 6, 34);
+    g.save(); g.translate(Math.sin(t * 0.7) * H * 0.003, Math.sin(t * 1.6) * H * 0.004);
+    let gr = g.createLinearGradient(0, 0, 0, hy);
+    gr.addColorStop(0, '#02050a'); gr.addColorStop(0.7, '#0c1622'); gr.addColorStop(1, '#27323a');
+    g.fillStyle = gr; g.fillRect(-20, -20, W + 40, hy + 20);
+    const glow = pov === 'def' ? 0.1 + 0.3 * p : 0.22;
+    gr = g.createRadialGradient(W / 2, hy, 0, W / 2, hy, W * 0.6);
+    gr.addColorStop(0, `rgba(235,140,60,${glow})`); gr.addColorStop(1, 'rgba(235,140,60,0)');
+    g.fillStyle = gr; g.fillRect(0, hy - H * 0.45, W, H * 0.5);
+    for (const s of stars) {
+      g.fillStyle = `rgba(230,235,255,${(0.25 + 0.75 * Math.abs(Math.sin(t * s.f + s.p))) * (1 - s.y / 0.6)})`;
+      g.fillRect(s.x * W, s.y * H, s.s, s.s);
+    }
+    g.fillStyle = 'rgba(225,228,215,0.85)'; g.beginPath(); g.arc(W * 0.66, H * 0.2, H * 0.045, 0, TAU); g.fill();
+    gr = g.createLinearGradient(0, hy, 0, H); gr.addColorStop(0, '#0c1217'); gr.addColorStop(1, '#030507');
+    g.fillStyle = gr; g.fillRect(-20, hy, W + 40, H - hy + 20);
+    if (pov === 'def') { enemy(t, hy, f); wall(t); } else { castle(t, hy); army(t); }
+    g.save(); g.globalCompositeOperation = 'lighter';
+    for (const e of embers) {
+      const y = ((e.y - t * e.v) % 1 + 1) % 1, x = e.x + Math.sin(t * 0.8 + e.p) * 0.02;
+      g.fillStyle = `rgba(255,170,70,${0.5 * Math.abs(Math.sin(t * 2 + e.p))})`; g.fillRect(x * W, y * H, e.s, e.s);
+    }
+    g.restore(); g.restore();
+    const k = ramp(t, 49, 56);
+    if (k > 0) {
+      g.fillStyle = `rgba(0,0,0,${0.55 * k})`; g.fillRect(0, 0, W, H);
+      g.save(); g.font = `${H * 0.26}px 'Noto Sans Symbols 2','Segoe UI Symbol',serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.shadowColor = 'rgba(232,162,58,0.9)'; g.shadowBlur = H * 0.08;
+      g.fillStyle = `rgba(239,226,184,${k * (0.85 + 0.15 * Math.sin(t * 3))})`;
+      g.fillText(GLYPH.K + TXT, W / 2, H * 0.36 + (1 - k) * H * 0.06); g.restore();
+    }
+    const fin = ramp(t, 0, 2) , fout = ramp(t, 62.5, 64);
+    g.fillStyle = `rgba(0,0,0,${Math.max(1 - fin, fout)})`; g.fillRect(0, 0, W, H);
+  }
+  function subs(t) {
+    const beats = SCRIPTS[pov]; let idx = -1;
+    for (let i = 0; i < beats.length; i++) if (t >= beats[i][0] && t < beats[i][1]) idx = i;
+    if (idx !== shown) {
+      shown = idx;
+      if (idx >= 0) { subEl.textContent = beats[idx][2]; subEl.classList.toggle('small', !!beats[idx][3]); }
+    }
+    const b = beats[idx];
+    subEl.style.opacity = b ? String(Math.max(0, Math.min(1, (t - b[0]) / 0.7, (b[1] - t) / 0.7))) : '0';
+    const s = Math.floor(t);
+    timeEl.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} / 1:04`;
+  }
+  function sound(t) {
+    if (t >= nextDrum) {
+      Snd.drum(0); if (t > 40) Snd.drum(0.22);
+      nextDrum += 2.1 - 1.2 * ramp(t, 14, 56);
+    }
+    if (!horn1 && t >= 25) { horn1 = true; Snd.horn(); }
+    if (!horn2 && t >= 56) { horn2 = true; Snd.horn(); }
+  }
+  function frame(now) {
+    if (!running) return;
+    const t = Math.max(0, (now - t0) / 1000);
+    if (t >= CINE_LEN) return finish();
+    draw(t); subs(t); sound(t);
+    raf = requestAnimationFrame(frame);
+  }
+  function onKey(e) { if (e.key === 'Escape') finish(); }
+  function finish() {
+    if (!running) return;
+    running = false; cancelAnimationFrame(raf);
+    window.removeEventListener('resize', size); document.removeEventListener('keydown', onKey);
+    Snd.stopDrone(); subEl.style.opacity = '0'; root.hidden = true;
+    const f = cb; cb = null; if (f) f();
+  }
+  return {
+    play(newPov, onDone) {
+      pov = newPov; cb = onDone; if (!stars.length) build();
+      root.hidden = false; size(); window.addEventListener('resize', size); document.addEventListener('keydown', onKey);
+      running = true; shown = -1; nextDrum = 14; horn1 = horn2 = false;
+      Snd.init(); Snd.startDrone(); t0 = performance.now(); raf = requestAnimationFrame(frame);
+    },
+    skip: finish
+  };
+})();
+/* ===== Game UI ===== */
+const $ = id => document.getElementById(id);
+const G = { s: null, legal: [], mode: 'two', pov: 'def', names: { w: 'Attacker', b: 'Defender' }, human: { w: true, b: true },
+  flipped: false, sel: -1, targets: [], last: null, over: false, busy: false, fallen: { w: [], b: [] } };
+const SIDE = { w: 'Attacker', b: 'Defender' };
+const cap1 = s => s[0].toUpperCase() + s.slice(1);
+
+function show(id) {
+  for (const s of ['s-title', 's-game']) $(s).hidden = s !== id;
+  window.scrollTo(0, 0);
+}
+
+/* ---- Rendering ---- */
+function render() {
+  const s = G.s, board = $('board'), focusI = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.i : null;
+  const checkSq = inCheck(s) ? kingSq(s.board, s.turn) : -1;
+  const tmap = new Map(G.targets.map(m => [m.to, m]));
+  let html = '';
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+    const i = G.flipped ? 63 - (r * 8 + c) : r * 8 + c, p = s.board[i], x = i % 8, y = i >> 3;
+    const cls = ['sq', (x + y) % 2 === 0 ? 'l' : 'd'];
+    if (G.last && (G.last.from === i || G.last.to === i)) cls.push('last');
+    if (G.sel === i) cls.push('sel');
+    if (i === checkSq) cls.push('chk');
+    if (tmap.has(i)) cls.push(tmap.get(i).cap ? 'cap' : 'dot');
+    const label = sqName(i) + (p ? ' ' + SIDE[p[0]] + ' ' + NAME[p[1]] : ' empty');
+    html += `<div class="${cls.join(' ')}" data-i="${i}" role="gridcell" tabindex="0" aria-label="${label}">` +
+      (r === 7 ? `<span class="co f">${FILES[x]}</span>` : '') + (c === 0 ? `<span class="co r">${8 - y}</span>` : '') +
+      (p ? `<span class="pc ${p[0]}">${GLYPH[p[1]]}${TXT}</span>` : '') + '</div>';
+  }
+  board.innerHTML = html;
+  if (focusI !== null) { const el = board.querySelector(`[data-i="${focusI}"]`); if (el) el.focus({ preventScroll: true }); }
+  const t = s.turn;
+  $('turn').className = 'turn ' + (t === 'w' ? 'a' : 'd');
+  $('turnName').textContent = G.names[t];
+  $('turnSub').textContent = `${t === 'w' ? 'Attackers' : 'Defenders'} to move · turn ${s.full}`;
+  const fall = (arr) => arr.slice().sort((a, b) => VAL[b[1]] - VAL[a[1]]).map(p => `<span class="${p[0]}">${GLYPH[p[1]]}${TXT}</span>`).join('');
+  $('fallA').innerHTML = fall(G.fallen.w); $('fallD').innerHTML = fall(G.fallen.b);
+  if (!G.over) $('status').textContent = G.busy ? 'The garrison is thinking...' : (checkSq >= 0 ? `Check. ${cap1(kingTitle(t))} is in danger.` : '');
+}
+
+function addLog(piece, quote, meta, sys) {
+  const li = document.createElement('li');
+  if (sys) { li.className = 'sys'; li.textContent = quote; }
+  else {
+    const g = document.createElement('span'); g.className = 'g ' + piece[0]; g.textContent = GLYPH[piece[1]] + TXT;
+    const box = document.createElement('div'), em = document.createElement('em'), sm = document.createElement('small');
+    em.textContent = '“' + quote + '”'; sm.textContent = meta;
+    box.append(em, sm); li.append(g, box);
+  }
+  $('log').insertBefore(li, $('log').firstChild);
+}
+
+function showReaction(sq, piece, text, delay) {
+  setTimeout(() => {
+    const fx = $('fx'), pos = G.flipped ? 63 - sq : sq, col = pos % 8, row = pos >> 3, c = piece[0];
+    const gh = document.createElement('div'); gh.className = 'ghost ' + c; gh.textContent = GLYPH[piece[1]] + TXT;
+    gh.style.left = col * 12.5 + '%'; gh.style.top = row * 12.5 + '%';
+    const bb = document.createElement('div'), sm = document.createElement('small');
+    bb.className = 'bubble ' + c; sm.textContent = SIDE[c] + ' ' + NAME[piece[1]];
+    bb.append(sm, document.createTextNode(text));
+    if (col < 4) bb.style.left = Math.min(col * 12.5 + 9, 40) + '%'; else bb.style.right = Math.min((7 - col) * 12.5 + 9, 40) + '%';
+    if (row < 4) bb.style.top = (row + 1) * 12.5 + '%'; else bb.style.bottom = (8 - row) * 12.5 + '%';
+    fx.append(gh, bb);
+    while (fx.children.length > 6) fx.firstChild.remove();
+    setTimeout(() => { gh.remove(); bb.remove(); }, 4300);
+  }, delay || 0);
+}
+
+/* ---- Playing a move ---- */
+function clickSq(i) {
+  if (G.over || G.busy || !G.human[G.s.turn]) return;
+  const p = G.s.board[i];
+  if (G.sel >= 0) {
+    const ms = G.targets.filter(m => m.to === i);
+    if (ms.length) { if (ms.some(m => m.promo)) return askPromo(ms); return play(ms[0]); }
+  }
+  if (p && p[0] === G.s.turn) { G.sel = i; G.targets = G.legal.filter(m => m.from === i); }
+  else { G.sel = -1; G.targets = []; }
+  render();
+}
+function askPromo(ms) {
+  const box = $('picks'); box.innerHTML = '';
+  for (const pr of 'QRBN') {
+    const b = document.createElement('button'); b.type = 'button'; b.className = ms[0].piece[0];
+    b.setAttribute('aria-label', 'Promote to ' + NAME[pr]); b.textContent = GLYPH[pr] + TXT;
+    b.onclick = () => { $('promo').hidden = true; play(ms.find(m => m.promo === pr)); };
+    box.append(b);
+  }
+  $('promo').hidden = false;
+}
+function play(m) {
+  const before = G.s, mover = before.turn, prev = G.last, after = apply(before, m);
+  G.s = after; G.sel = -1; G.targets = []; G.legal = legal(after);
+  G.last = { from: m.from, to: m.to, cap: !!m.cap, color: mover, piece: m.piece };
+  const chk = inCheck(after);
+  let delay = 0;
+  if (m.cap) {
+    const vsq = m.ep ? m.from - (m.from % 8) + (m.to % 8) : m.to;
+    G.fallen[m.cap[0]].push(m.cap);
+    const rx = reactionFor({ victim: m.cap, capturer: m.piece, prev, recapture: canRecapture(after, m.to), ep: !!m.ep, toSq: m.to });
+    showReaction(vsq, m.cap, rx.text, 0);
+    addLog(m.cap, rx.text, `${cap1(NAME[m.piece[1]])} ${sqName(m.from)} takes ${NAME[m.cap[1]]} on ${sqName(vsq)}`);
+    Snd.capture(); delay = 1600;
+  } else Snd.move();
+  if (m.castle) { showReaction(m.to, m.piece, pickLine('castle', CASTLE_LINES), delay); addLog(null, `${SIDE[mover]}s fortify the king (castle).`, '', true); }
+  if (m.promo) {
+    const line = pickLine('promo', PROMO_LINES);
+    showReaction(m.to, mover + m.promo, line, delay);
+    addLog(mover + m.promo, line, `Pawn reaches ${sqName(m.to)} and becomes a ${NAME[m.promo]}`);
+  }
+  const over = G.legal.length === 0 || insufficient(after) || after.half >= 100;
+  if (chk && !over) { showReaction(kingSq(after.board, after.turn), after.turn + 'K', pickLine('check', CHECK_LINES), delay + (m.promo || m.castle ? 1600 : 0)); Snd.check(); }
+  render();
+  if (G.legal.length === 0) endGame(chk ? 'mate' : 'stalemate', mover);
+  else if (insufficient(after)) endGame('material');
+  else if (after.half >= 100) endGame('fifty');
+  else maybeAI();
+}
+function endGame(kind, who) {
+  G.over = true; G.busy = false;
+  const n = G.names;
+  const T = {
+    mate: who === 'w'
+      ? ['The King Has Fallen', `${n.w} and the attackers take the keep. The siege is over.`]
+      : ['The Warlord Has Fallen', `${n.b} breaks the assault. The defenders hold the keep.`],
+    stalemate: ['Standoff', 'No move left and no king taken. The siege grinds to a halt.'],
+    material: ['Too Few Left to Win', 'Not enough soldiers remain on either side to finish it.'],
+    fifty: ['Dawn Breaks', 'Fifty moves without a capture or a charge. Both armies fall back.'],
+    resign: who === 'w'
+      ? ['The Attackers Withdraw', `${n.w} orders the retreat. ${n.b} and the defenders hold the keep.`]
+      : ['The Keep Surrenders', `${n.b} opens the gates. ${n.w} and the attackers take the keep.`]
+  }[kind];
+  $('status').textContent = T[0];
+  $('endTitle').textContent = T[0]; $('endText').textContent = T[1];
+  addLog(null, T[0] + '. ' + T[1], '', true);
+  setTimeout(() => { if (G.over) $('end').hidden = false; }, kind === 'resign' ? 200 : 1800);
+}
+
+/* ---- Solo opponent: looks two moves ahead ---- */
+function evalState(s) {
+  const PV = { P: 100, N: 320, B: 330, R: 500, Q: 900, K: 0 };
+  let v = 0;
+  s.board.forEach((p, i) => {
+    if (!p) return;
+    const x = i % 8, y = i >> 3, k = p[1];
+    let sc = PV[k];
+    if (k !== 'K' && k !== 'P') sc += (7 - Math.abs(3.5 - x) * 2 - Math.abs(3.5 - y) * 2) * 5;
+    if (k === 'P') sc += (p[0] === 'w' ? 6 - y : y - 1) * 6;
+    v += p[0] === 'w' ? sc : -sc;
+  });
+  return v;
+}
+function aiMove(s) {
+  const me = s.turn, sign = me === 'w' ? 1 : -1; let best = null, bs = -1e9;
+  for (const m of legal(s)) {
+    const n = apply(s, m), replies = legal(n); let sc;
+    if (!replies.length) sc = inCheck(n) ? 1e6 : 0;
+    else { sc = 1e9; for (const r of replies) sc = Math.min(sc, evalState(apply(n, r)) * sign); }
+    sc += Math.random() * 25;
+    if (sc > bs) { bs = sc; best = m; }
+  }
+  return best;
+}
+function maybeAI() {
+  if (G.over || G.human[G.s.turn]) return;
+  G.busy = true; render();
+  setTimeout(() => { if (G.over) return; const m = aiMove(G.s); G.busy = false; if (m) play(m); }, 1100);
+}
+
+/* ---- Setup, screens and controls ---- */
+function reset() {
+  G.s = initState(); G.legal = legal(G.s); G.sel = -1; G.targets = []; G.last = null; G.over = false; G.busy = false;
+  G.fallen = { w: [], b: [] };
+  $('log').innerHTML = ''; $('fx').innerHTML = ''; $('end').hidden = true; $('promo').hidden = true;
+  addLog(null, `The siege begins. ${G.names.w} leads the attackers and marches first. ${G.names.b} holds the keep.`, '', true);
+  render(); maybeAI();
+}
+function seg(id, cb) {
+  $(id).addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    $(id).querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); cb(b.dataset.v);
+  });
+}
+function pressSeg(id, v) { $(id).querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.v === v))); }
+seg('segMode', v => { G.mode = v; if (v === 'solo-a') { G.pov = 'atk'; pressSeg('segPov', 'atk'); } if (v === 'solo-d') { G.pov = 'def'; pressSeg('segPov', 'def'); } });
+seg('segPov', v => { G.pov = v; });
+
+function begin(withIntro) {
+  Snd.init();
+  G.names = { w: $('nameA').value.trim() || 'Attacker', b: $('nameD').value.trim() || 'Defender' };
+  G.human = { w: G.mode !== 'solo-d', b: G.mode !== 'solo-a' };
+  G.flipped = G.mode === 'solo-d';
+  $('s-title').hidden = true;
+  const start = () => { show('s-game'); reset(); };
+  if (withIntro) Cine.play(G.pov, start); else start();
+}
+$('btnBegin').onclick = () => begin(true);
+$('btnSkipStart').onclick = () => begin(false);
+$('btnSkip').onclick = () => Cine.skip();
+$('btnIntro').onclick = () => { $('s-game').hidden = true; Cine.play(G.pov, () => show('s-game')); };
+$('btnMenu').onclick = () => show('s-title');
+$('btnFlip').onclick = () => { G.flipped = !G.flipped; $('fx').innerHTML = ''; render(); };
+$('btnSound').onclick = () => {
+  Snd.init(); Snd.on = !Snd.on;
+  $('btnSound').setAttribute('aria-pressed', String(Snd.on)); $('btnSound').textContent = Snd.on ? 'Sound on' : 'Sound off';
+};
+$('btnNew').onclick = () => reset();
+$('btnAgain').onclick = () => reset();
+$('btnLook').onclick = () => { $('end').hidden = true; };
+let surrenderTimer = 0;
+$('btnResign').onclick = () => {
+  const b = $('btnResign');
+  if (G.over) return;
+  if (b.dataset.arm) {
+    clearTimeout(surrenderTimer); delete b.dataset.arm; b.textContent = 'Surrender';
+    endGame('resign', G.human[G.s.turn] ? G.s.turn : (G.human.w ? 'w' : 'b'));
+  } else {
+    b.dataset.arm = '1'; b.textContent = 'Confirm surrender?';
+    surrenderTimer = setTimeout(() => { delete b.dataset.arm; b.textContent = 'Surrender'; }, 3000);
+  }
+};
+$('board').addEventListener('click', e => { const c = e.target.closest('.sq'); if (c) clickSq(+c.dataset.i); });
+$('board').addEventListener('keydown', e => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const c = e.target.closest('.sq'); if (c) { e.preventDefault(); clickSq(+c.dataset.i); }
+});
+
+/* Keep a game in progress if the page is republished while open */
+G.s = initState(); G.legal = legal(G.s);
+</script>
+
+</body></html>

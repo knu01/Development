@@ -1,0 +1,91 @@
+# THE LAST STAND — PROJECT STATUS
+
+**Project:** The Last Stand  
+**Status:** Pre-development  
+**Current Checkpoint:** 0 — Project Foundation  
+**Last Updated:** 4 November 2026
+
+---
+
+## 1. Project Vision
+
+The Last Stand is a chess game first and foremost.
+
+Its purpose is to preserve serious, strategic chess gameplay while enhancing the experience through cinematic presentation, character personalities, storytelling, animations, and battlefield environments.
+
+**Core principle:** Storytelling must enhance chess, never interfere with it.
+
+## 2. Core Concepts
+
+- Fully playable chess with standard chess rules.
+- Attacker and Defender roles.
+- Cinematic pre-match introductions.
+- Multiple battlefield environments.
+- Distinct personalities for chess pieces.
+- Context-aware capture reactions.
+- Character-specific dialogue and backstories.
+- Special animations, visual effects and sound.
+- Optional cinematic intensity settings.
+
+All features are subject to gradual development and refinement.
+
+## 3. Current Development Progress
+
+| Area | Status |
+|---|---|
+| Project vision | Defined |
+| Development roadmap | Initial draft |
+| Technology stack | Not decided |
+| Project structure | Pending |
+| Chess engine | Not started |
+| Chess interface | Not started |
+| Reaction system | Not started |
+| Cinematic system | Not started |
+
+## 4. Development Checkpoints
+
+- [ ] Checkpoint 0 — Project Foundation
+- [ ] Checkpoint 1 — Chessboard and Piece Interaction
+- [ ] Checkpoint 2 — Complete Chess Rules and Engine
+- [ ] Checkpoint 3 — First Playable Chess Game
+- [ ] Checkpoint 4 — Character and Reaction System
+- [ ] Checkpoint 5 — Battlefield and Attacker/Defender Experience
+- [ ] Checkpoint 6 — Animations, Audio and Storytelling
+- [ ] Checkpoint 7 — AI Opponent and Game Polish
+
+Checkpoints may be adjusted as development progresses.
+
+## 5. Technical Decisions
+
+No technology stack or architecture has been finalised yet.
+
+All significant technical decisions must be documented in `DECISIONS.md`.
+
+## 6. Known Issues
+
+None currently. Development has not started.
+
+## 7. Collaboration Rules
+
+This project may involve ChatGPT, Codex, Claude and human contributions.
+
+1. Read this file before starting significant work.
+2. Inspect existing code before modifying it.
+3. Do not overwrite another contributor's work without understanding it.
+4. Test changes before marking tasks complete.
+5. Update this file after completing meaningful work.
+6. Record important decisions and their reasoning.
+7. Never claim an untested feature is complete.
+8. Keep changes focused on the current checkpoint.
+
+## 8. Immediate Next Action
+
+Complete Checkpoint 0:
+
+- Inspect the existing project workspace.
+- Select an appropriate technology stack.
+- Establish the initial folder structure.
+- Create project documentation.
+- Prepare the development environment.
+
+**Remember:** Build incrementally. Preserve the vision. Never sacrifice chess quality for presentation.
