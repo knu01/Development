@@ -1,4 +1,10 @@
-# Development log
+# Historical development log — superseded as the current status source
+
+This log contains the original 4 November 2026 Checkpoint 0 entry. It is retained unchanged below as historical context. Current status, decisions, and full milestone history live in [`../docs/project/PROJECT_STATE.md`](../docs/project/PROJECT_STATE.md), [`../docs/project/DECISIONS.md`](../docs/project/DECISIONS.md), and [`../docs/project/DEVELOPMENT_HISTORY.md`](../docs/project/DEVELOPMENT_HISTORY.md).
+
+---
+
+# Development log (2026-11-04 snapshot)
 
 Record meaningful decisions, completed work, and open questions. Keep entries
 concise; link to the relevant checkpoint or design note when useful.

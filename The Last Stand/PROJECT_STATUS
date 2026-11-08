@@ -1,8 +1,14 @@
-# THE LAST STAND — PROJECT STATUS
+# HISTORICAL STATUS REPORT — SUPERSEDED
 
-**Project:** The Last Stand  
-**Status:** Pre-development  
-**Current Checkpoint:** 0 — Project Foundation  
+This report describes the pre-development state as of 4 November 2026. Its milestone and technology claims are obsolete. Use [`docs/project/PROJECT_STATE.md`](docs/project/PROJECT_STATE.md) for current verified status, [`docs/project/DEVELOPMENT_HISTORY.md`](docs/project/DEVELOPMENT_HISTORY.md) for evidence, and [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md) for the current implementation architecture. The owner-approved V1 Specification Revision 2 currently exists outside this repository; `Development/SPEC.md` is only the old v0.1 draft.
+
+---
+
+# THE LAST STAND — PROJECT STATUS (2026-11-04 snapshot)
+
+**Project:** The Last Stand
+**Status:** Pre-development
+**Current Checkpoint:** 0 — Project Foundation
 **Last Updated:** 4 November 2026
 
 ---

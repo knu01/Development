@@ -12,9 +12,9 @@ describe('ordinary legal move generation', () => {
     expect(hasMove(rows, 'e2', 'e4')).toBe(true);
   });
 
-  it('does not treat a promotion-required pawn move as an ordinary move', () => {
+  it('generates promotion-bound moves under the M2.3 rules', () => {
     const rows = ['.......k', '....P...', '........', '........', '........', '........', '........', 'K.......'];
-    expect(hasMove(rows, 'e7', 'e8')).toBe(false);
+    expect(hasMove(rows, 'e7', 'e8')).toBe(true);
   });
 
   it('moves knights without being blocked by adjacent pieces', () => {

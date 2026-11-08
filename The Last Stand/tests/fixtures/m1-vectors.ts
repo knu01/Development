@@ -1,3 +1,4 @@
+import { createRuleState } from '../../src/engine';
 import type { Piece, PieceType, RuleState, Side, Square } from '../../src/engine/types';
 
 const piece = (side: Side, type: PieceType): Piece => ({ side, type });
@@ -20,7 +21,7 @@ export function position(
     return piece(symbol === symbol.toUpperCase() ? 'white' : 'black', type);
   }));
 
-  return { board, sideToMove };
+  return createRuleState({ board, sideToMove });
 }
 
 export const square = (file: string, rank: number): Square => {

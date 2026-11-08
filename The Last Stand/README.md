@@ -1,4 +1,19 @@
-# The Last Stand
+# The Last Stand — project entry point
+
+> **Current project memory:** this file's original checkpoint roadmap is historical and no longer reflects implementation. Start with [`docs/project/PROJECT_STATE.md`](docs/project/PROJECT_STATE.md), then [`docs/project/DECISIONS.md`](docs/project/DECISIONS.md), [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md), and the owner-approved V1 Specification Revision 2. The current Revision 2 copy is not yet stored in this repository; see Project State. `Development/SPEC.md` is an older v0.1 draft.
+
+## Current workspace
+
+- [Project state](docs/project/PROJECT_STATE.md)
+- [Decision register](docs/project/DECISIONS.md)
+- [Full development history](docs/project/DEVELOPMENT_HISTORY.md)
+- [Claude's original handoff (historical, preserved)](docs/project/HANDOFF_CLAUDE.md)
+- [Production architecture](docs/architecture/ARCHITECTURE.md)
+- [Agent working agreement](AGENTS.md)
+
+---
+
+## Historical Checkpoint 0 README (2026-11-04)
 
 The Last Stand is a chess game with an optional battle story around the match.
 The first goal is a serious, complete, enjoyable chess game. Attacker and

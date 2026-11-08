@@ -1,4 +1,10 @@
-# Checkpoint tracker
+# Historical checkpoint tracker — superseded
+
+This tracker predates the production engine milestones and its “in progress / not started” labels are obsolete. See [`../docs/project/PROJECT_STATE.md`](../docs/project/PROJECT_STATE.md) for current milestone status and [`../docs/project/DEVELOPMENT_HISTORY.md`](../docs/project/DEVELOPMENT_HISTORY.md) for the full technical record. The checkpoint text below is retained as historical planning context.
+
+---
+
+# Checkpoint tracker (2026-11-04 snapshot)
 
 Status key: **In progress**, **Not started**, **Complete**. Checkpoints and
 their order are adjustable; confirm scope at the start of each one.
