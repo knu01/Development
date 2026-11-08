@@ -15,7 +15,7 @@ export default defineConfig({
       {
         test: {
           name: 'browser',
-          include: ['tests/engine/shared-vectors.test.ts'],
+          include: ['tests/engine/shared-vectors.test.ts', 'tests/**/*.browser.test.ts'],
           browser: {
             enabled: true,
             provider: playwright(),
@@ -27,3 +27,4 @@ export default defineConfig({
     ],
   },
 });
+
