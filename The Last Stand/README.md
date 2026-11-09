@@ -1,6 +1,6 @@
 # The Last Stand — project entry point
 
-> **Current project memory:** this file's original checkpoint roadmap is historical and no longer reflects implementation. Start with [`docs/project/PROJECT_STATE.md`](docs/project/PROJECT_STATE.md), then [`docs/project/DECISIONS.md`](docs/project/DECISIONS.md), [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md), and the owner-approved V1 Specification Revision 2. The current Revision 2 copy is not yet stored in this repository; see Project State. `Development/SPEC.md` is an older v0.1 draft.
+> **Current project memory:** this file's original checkpoint roadmap is historical and no longer reflects implementation. Start with [`docs/project/PROJECT_STATE.md`](docs/project/PROJECT_STATE.md), then [`docs/project/DECISIONS.md`](docs/project/DECISIONS.md), [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md), and the [owner-approved V1 Specification Revision 2](docs/project/V1_SPECIFICATION_REVISION_2.md). `Development/SPEC.md` is an older v0.1 draft.
 
 ## Current workspace
 
