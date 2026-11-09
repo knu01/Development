@@ -8,7 +8,7 @@ Before planning or changing project files, read:
 2. [`docs/project/DECISIONS.md`](docs/project/DECISIONS.md)
 3. Relevant sections of [`docs/project/DEVELOPMENT_HISTORY.md`](docs/project/DEVELOPMENT_HISTORY.md)
 4. [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md)
-5. The owner-approved V1 Specification, Revision 2 (the checked-in `Development/SPEC.md` is an older v0.1 draft, not the current authority). If Revision 2 is not available in the repository or current task attachments, ask the owner to provide it; do not substitute an older draft.
+5. The owner-approved V1 Specification, Revision 2 ([`docs/project/V1_SPECIFICATION_REVISION_2.md`](docs/project/V1_SPECIFICATION_REVISION_2.md)). `Development/SPEC.md` is an older v0.1 draft, not the current authority. If Revision 2 is unavailable in the repository or task attachments, ask the owner to provide it; do not substitute an older draft.
 
 The project state names the current milestone and active constraints. This file sets collaboration rules. The current approved specification governs product scope; architecture documentation describes implemented technical boundaries. Historical handoffs are evidence and context, not automatic authority.
 
