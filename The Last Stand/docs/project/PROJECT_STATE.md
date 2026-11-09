@@ -14,7 +14,7 @@
 
 The Last Stand is a serious, fully playable chess game first, enhanced by optional battle framing and storytelling. Narrative, animation, sound, and Chronicle must never alter chess rules, authoritative state, move acceptance, or results.
 
-Read this file first, then [decisions](DECISIONS.md), the relevant [development history](DEVELOPMENT_HISTORY.md), [architecture](../architecture/ARCHITECTURE.md), and the owner-approved V1 Specification Revision 2. The current Revision 2 copy was supplied outside the repository and is not checked in. The in-repository [`Development/SPEC.md`](../../Development/SPEC.md) is an older v0.1 draft and is not authoritative.
+Read this file first, then [decisions](DECISIONS.md), the relevant [development history](DEVELOPMENT_HISTORY.md), [architecture](../architecture/ARCHITECTURE.md), and the owner-approved V1 Specification Revision 2. The canonical Revision 2 copy is [`V1_SPECIFICATION_REVISION_2.md`](V1_SPECIFICATION_REVISION_2.md). The in-repository [`Development/SPEC.md`](../../Development/SPEC.md) is an older v0.1 draft and is not authoritative.
 
 ## Current implementation
 
@@ -55,7 +55,7 @@ Approved but still awaiting implementation includes the owner-approved product d
 - Dead-position computation is too slow for some positions: K+N-v-K and the Buchanan a4 fixture hit a 10-second per-side budget; same-colour K+B-v-K+B also remains unresolved. The browser worker terminates at cancellation/resource limits and the Match remains pending. Retries restart from the root, so continuous background progress remains an implementation gap.
 - Classification thresholds, grouping policy P1/P2, text placement, dismissal completion, minimum readable duration, animation triggers, and Chronicle perspective choice remain open as listed in [DECISIONS.md](DECISIONS.md).
 - Full perft verification beyond depth 3 is absent from the accepted M2.4 evidence.
-- The supplied Revision 2 spec has a stale “Draft for Owner Approval” footer despite later owner approval. The owner’s later approval governs; the file itself has not been edited. The current spec copy is outside this repository and should be added by the owner when ready for shared repository access.
+- The canonical Revision 2 file is stored verbatim and retains stale draft-status language, including a footer saying implementation is blocked. The owner’s later approval recorded in [DECISIONS.md](DECISIONS.md) governs. The M3.2 decision that Match owns repetition history supersedes the spec’s older RuleState wording; see [DECISIONS.md](DECISIONS.md).
 
 ## Repository and Git caveat
 
