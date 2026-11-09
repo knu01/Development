@@ -2,6 +2,8 @@ export { applyLegalMove, MoveApplicationException, tryApplyMove } from './apply-
 export { FenParseError, InvalidEnginePositionError, parseFen, toFen, validateEnginePosition } from './fen';
 export type { EnginePositionErrorCode, EnginePositionValidation, EnginePositionValidationError, FenErrorCode } from './fen';
 export { isInCheck, isSquareAttacked, legalMoves } from './move-generation';
+export { detectDeadPosition } from './dead-position';
+export type { DeadPositionOptions, DeadPositionResult } from './dead-position';
 export { createInitialRuleState, createRuleState, internPiece } from './state';
 export {
   assessMatingPotential, ENGINE_CAPABILITIES, evaluateAutomaticOutcome, evaluateClaim,

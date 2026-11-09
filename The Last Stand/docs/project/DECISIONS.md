@@ -53,6 +53,7 @@ Approval dates are given only where the source record identifies one; otherwise 
 - **Pawn tags (2026-11-07 handoff):** configurable `fresh_recruit` before full move 10, `veteran` alive at least 20 full moves, `advanced` on opponent's half, `home_guard` never moved. Resolver implementation and configuration remain outstanding.
 - **M3.2 architecture amendment:** Match is the owner/source of actual repetition history. Engine receives history explicitly for pure evaluation. This supersedes older handoff/spec proposals that put repetition context inside `RuleState`; implemented and accepted in M3.2.
 - **M3.2 scope:** resignation is not implemented; do not import the older proposal to include it. `assessMatingPotential` remains explicitly unimplemented; no guessed dead/live result.
+- **M3.3 authorization (2026-11-08):** implement pending adjudication and complete dead-position detection. While the result is `UNDETERMINED`, continue analysis in the background, block subsequent move commitment, and release play only after definitive `LIVE` or `DEAD`. `LIVE` requires a verified legal checkmate witness; `DEAD` requires independent proof that neither side can mate. No material-only shortcut or guessed outcome.
 - **Technology/production architecture:** TypeScript, Vite, Vitest, browser-native UI, no React or game engine for now, runtime dependency-free chess engine. Approved before M1; see [architecture](../architecture/ARCHITECTURE.md).
 
 ## Technical requirements accepted by the owner
@@ -82,7 +83,7 @@ M1, M2.1, M2.2, M2.3, M3.1, and M3.2 are complete and accepted for their documen
 
 | Item | Why it remains open / evidence needed |
 |---|---|
-| Dead-position `UNDETERMINED` policy | Decide only after frozen Experiment 3 reports zero false DEAD, witnesses, p99 time/memory, and unresolved share. |
+| Dead-position detector performance | The strict `UNDETERMINED` policy is now approved. Measure difficult positions, background resource use, and time-to-definitive-result; do not use measurements to weaken the policy. |
 | Formal dead-position model and search limits | Technical work; soundness/completeness and runtime must be established. |
 | Heroic/Unknown/Ordinary acceptable shares and supporter threshold | Classification simulator over at least 50 real games; owner reviews 10 transcripts (SPEC Experiment 4). |
 | Ordinary grouping P1 vs P2 | Compare latency/readability/clarity on identical histories. |

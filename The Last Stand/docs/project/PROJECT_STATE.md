@@ -1,7 +1,7 @@
 # The Last Stand — Project State
 
 **Last updated:** 2026-11-08
-**Status:** M1–M3.2 implemented and accepted for their documented scopes. No later milestone is authorized or in progress.
+**Status:** M1–M3.2 implemented and accepted for their documented scopes. M3.3 dead-position detection and pending adjudication are authorized and in progress.
 
 ## Start here
 
@@ -21,7 +21,7 @@ Read this file first, then [decisions](DECISIONS.md), the relevant [development 
 | M3.1 — Match foundation | **Complete, accepted** | Stable piece IDs, immutable move events, captures, and deterministic replay. |
 | M3.2 — draw rules and adjudication | **Complete, accepted** | Match-owned repetition history, claims, automatic repetition/move-count draws, stalemate/checkmate, event replay verification, and explicit unimplemented dead-position interface. |
 
-No M3.3 implementation is underway or authorized. The immediate next work is a bounded technical/design preparation for complete dead-position detection, including the formal rules model, frozen experiment corpus, performance and `UNDETERMINED` policy evidence. The owner must authorize implementation scope after reviewing that preparation.
+**M3.3 is authorized.** Implement pending-adjudication infrastructure and a sound dead-position detector in connected increments. M3.3-A blocks additional moves while the result is unresolved; M3.3-B may return only verified `LIVE`, proven `DEAD`, or `UNDETERMINED`. Continue analysis while unresolved; do not guess or silently release play. The owner explicitly approved this strict policy.
 
 ## Architecture in force
 
@@ -44,7 +44,7 @@ Approved but still awaiting implementation includes the owner-approved product d
 
 ## Risks and unresolved owner choices
 
-- Dead-position computation can be expensive; `UNDETERMINED` handling is an open owner decision after Experiment 3. The detector must evaluate each side separately and only return `DEAD` with sound proof.
+- Dead-position computation can be expensive. The owner-approved policy is to continue background analysis and prevent a subsequent move until a definitive result is established. The detector must evaluate both sides and only return `DEAD` with sound proof.
 - Classification thresholds, grouping policy P1/P2, text placement, dismissal completion, minimum readable duration, animation triggers, and Chronicle perspective choice remain open as listed in [DECISIONS.md](DECISIONS.md).
 - Full perft verification beyond depth 3 is absent from the accepted M2.4 evidence.
 - The supplied Revision 2 spec has a stale “Draft for Owner Approval” footer despite later owner approval. The owner’s later approval governs; the file itself has not been edited. The current spec copy is outside this repository and should be added by the owner when ready for shared repository access.
@@ -55,9 +55,9 @@ The working directory is `D:\Development\The Last Stand`, while Git metadata is 
 
 ## Immediate next steps
 
-1. Owner reviews this memory set and decides where to place the authoritative Revision 2 spec in the repository.
-2. Prepare the dead-position research spike without weakening the standard-rules requirement; settle corpus, oracle, budgets, measurements, and fallback policy for `UNDETERMINED`.
-3. Owner authorizes a concrete next implementation milestone.
+1. Complete M3.3-A pending adjudication and replay integration.
+2. Complete M3.3-B detector, exhaustive small-material oracle checks, and difficult-position benchmarks.
+3. Resume playable game development after M3.3 review. The full Revision 2 text remains outside the repository; relevant available requirements are summarized in this memory set.
 
 ## Evidence links
 
