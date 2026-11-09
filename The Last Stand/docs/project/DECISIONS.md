@@ -96,4 +96,4 @@ M1, M2.1, M2.2, M2.3, M3.1, and M3.2 are complete and accepted for their documen
 | Chronicle perspectives | SPEC asks whether two selectable perspective versions are offered; not decided. |
 | Resignation in V1 | Revision 2 lists as open; M3.2 excludes it. Requires owner decision before implementation. |
 | Draw offers/agreed draws | Deferred to V1.1 unless owner brings them forward. |
-| Exact current SPEC repository location | Revision 2 is approved but the supplied copy is outside the repository; owner should place the canonical copy in the repo. |
+
