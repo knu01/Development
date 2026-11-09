@@ -1,7 +1,9 @@
 # The Last Stand — Decision Register
 
-**Last updated:** 2026-11-08
+**Last updated:** 2026-11-09
 **Authority:** The owner has final authority. Revision 2 of the V1 Specification is owner-approved by later owner instruction even though the supplied file retains a draft footer. This register records decisions and status; it does not amend the SPEC.
+
+**Team responsibility update (owner, 2026-11-09):** Codex is Engineering Lead for Engine/rules, Match/adjudication, dead-position detection, game state/authoritative events, AI/multiplayer, backend architecture/tests, performance, and correctness. Claude owns frontend, visual design, UI/UX, animations, and presentation. Cross-boundary work uses documented APIs and event contracts; frontend never decides legality or authoritative results. This supersedes historical role descriptions.
 
 Status labels: **Approved** = owner-approved; **Implemented** = implemented and accepted for a milestone; **Technical requirement** = required by approved scope; **Recommendation** = agent proposal not approved; **Open** = owner decision or experiment remains.
 
@@ -42,7 +44,7 @@ Approval dates are given only where the source record identifies one; otherwise 
 | D29 | V1 Narrative Beats use deterministic rules from match history; strategic detection is deferred. | Approved. |
 | D30 | Preserve the original prototype untouched; production uses a separate engine. | Approved. |
 | D31 | Incorrect draw claim procedure: reject wrong current-position claim and continue; for a wrong claim with a legal intended move, execute that move normally; reject illegal intended move before claim evaluation; no clock penalty in V1; record every attempt. | Approved no-clock adaptation; M3.2 implemented. |
-| D32 | Complete dead-position detection is mandatory; material-only approximation cannot silently replace it. | Approved; implementation outstanding. |
+| D32 | Complete dead-position detection is mandatory; material-only approximation cannot silently replace it. | Approved; experimental detector/integration progress exists, but complete implementation and acceptance remain outstanding. |
 | D33 | Chronicle is post-match, skippable, independent per player, does not delay result, covers both sides, and adapts length to match/events. | Approved; implementation outstanding. |
 | D34 | Local/single-player mode switching is immediate; future online preferences lock at match start. | Approved. |
 | D35 | Cinematic uses the same text as Quick Play plus optional short animations in a separate panel. Animations are skippable/closable, never block moves/board updates, and never replace text. | Approved; animation details remain open. |
@@ -54,6 +56,7 @@ Approval dates are given only where the source record identifies one; otherwise 
 - **M3.2 architecture amendment:** Match is the owner/source of actual repetition history. Engine receives history explicitly for pure evaluation. This supersedes older handoff/spec proposals that put repetition context inside `RuleState`; implemented and accepted in M3.2.
 - **M3.2 scope:** resignation is not implemented; do not import the older proposal to include it. `assessMatingPotential` remains explicitly unimplemented; no guessed dead/live result.
 - **M3.3 authorization (2026-11-08):** implement pending adjudication and complete dead-position detection. While the result is `UNDETERMINED`, continue analysis in the background, block subsequent move commitment, and release play only after definitive `LIVE` or `DEAD`. `LIVE` requires a verified legal checkmate witness; `DEAD` requires independent proof that neither side can mate. No material-only shortcut or guessed outcome.
+- **M3.3 progress (2026-11-09):** bounded exhaustive detector, terminable browser worker, pending Match gate, adjudication events, and replay verification are implemented experimentally. Resource exhaustion and cancellation remain pending; retries restart from the root. Measurements show unresolved positions under current limits. This is not M3.3 completion or V1 chess-rule completeness.
 - **Technology/production architecture:** TypeScript, Vite, Vitest, browser-native UI, no React or game engine for now, runtime dependency-free chess engine. Approved before M1; see [architecture](../architecture/ARCHITECTURE.md).
 
 ## Technical requirements accepted by the owner
@@ -83,7 +86,7 @@ M1, M2.1, M2.2, M2.3, M3.1, and M3.2 are complete and accepted for their documen
 
 | Item | Why it remains open / evidence needed |
 |---|---|
-| Dead-position detector performance | The strict `UNDETERMINED` policy is now approved. Measure difficult positions, background resource use, and time-to-definitive-result; do not use measurements to weaken the policy. |
+| Dead-position detector performance | The strict `UNDETERMINED` policy is approved. 2026-11-09 measurements: K+N-v-K and Buchanan a4 remain `UNDETERMINED` at 10 seconds; same-colour K+B-v-K+B also remains unresolved. Measure resumable background work, low-end-device time and memory, and corpus `UNDETERMINED` rates; do not weaken the policy. Full measurements are in [Development History](DEVELOPMENT_HISTORY.md). |
 | Formal dead-position model and search limits | Technical work; soundness/completeness and runtime must be established. |
 | Heroic/Unknown/Ordinary acceptable shares and supporter threshold | Classification simulator over at least 50 real games; owner reviews 10 transcripts (SPEC Experiment 4). |
 | Ordinary grouping P1 vs P2 | Compare latency/readability/clarity on identical histories. |

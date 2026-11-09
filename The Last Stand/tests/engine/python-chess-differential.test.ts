@@ -5,6 +5,7 @@ import {
 } from '../../src/engine';
 import { commitMove, createMatch } from '../../src/match';
 import type { Move, MoveInput } from '../../src/engine';
+import type { Match } from '../../src/match';
 import oracle from '../fixtures/python-chess-draw-oracle.json';
 
 interface OraclePosition {
@@ -56,6 +57,12 @@ function claimExists(state: ReturnType<typeof parseFen>, history: readonly strin
   return legalMoves(state).some((move) => evaluateClaim(state, history, { basis, intendedMove: inputFromUci(moveToUci(move)) }).kind === 'valid');
 }
 
+// This differential suite covers Engine/Match rule facts. M3.3 pending-gate
+// behavior is verified separately against the real detector.
+const asResolvedFixture = (match: Match): Match => match.status === 'adjudication-pending'
+  ? Object.freeze({ ...match, status: 'in-progress' as const })
+  : match;
+
 describe('python-chess 1.11.2 differential oracle', () => {
   it.each(oracle.scenarios)('matches legal moves, state facts and draw conditions: $name', (scenario) => {
     let match = createMatch({ gameId: `oracle-${scenario.name}`, initialState: parseFen(scenario.startFen) });
@@ -83,7 +90,7 @@ describe('python-chess 1.11.2 differential oracle', () => {
       expect(automatic?.kind === 'seventy_five_moves').toBe(expected.seventyFiveAutomatic);
 
       if (ply < scenario.moves.length) {
-        const committed = commitMove(match, inputFromUci(scenario.moves[ply]));
+        const committed = commitMove(asResolvedFixture(match), inputFromUci(scenario.moves[ply]));
         expect(committed.ok).toBe(true);
         if (!committed.ok) return;
         match = committed.match;

@@ -4,6 +4,8 @@ export type { EnginePositionErrorCode, EnginePositionValidation, EnginePositionV
 export { isInCheck, isSquareAttacked, legalMoves } from './move-generation';
 export { detectDeadPosition } from './dead-position';
 export type { DeadPositionOptions, DeadPositionResult } from './dead-position';
+export { runDeadPositionAnalysis } from './dead-position-runner';
+export type { DeadPositionRunnerOptions } from './dead-position-runner';
 export { createInitialRuleState, createRuleState, internPiece } from './state';
 export {
   assessMatingPotential, ENGINE_CAPABILITIES, evaluateAutomaticOutcome, evaluateClaim,

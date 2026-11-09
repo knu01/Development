@@ -73,8 +73,18 @@ export interface MatchResultEvent {
   readonly result: MatchResult;
 }
 
-export type MatchEvent = MatchMoveEvent | MatchClaimEvent | MatchResultEvent;
-export type MatchStatus = 'in-progress' | 'finished';
+export interface MatchAdjudicationEvent {
+  readonly kind: 'adjudication';
+  readonly gameId: string;
+  readonly eventSeq: number;
+  readonly ply: number;
+  readonly outcome: 'LIVE' | 'DEAD';
+  readonly matingSide: Side | null;
+  readonly witness: readonly Move[] | null;
+}
+
+export type MatchEvent = MatchMoveEvent | MatchClaimEvent | MatchAdjudicationEvent | MatchResultEvent;
+export type MatchStatus = 'adjudication-pending' | 'in-progress' | 'finished';
 
 export interface Match {
   readonly gameId: string;
@@ -96,7 +106,7 @@ export interface ClaimDrawInput {
   readonly intendedMove?: MoveInput;
 }
 
-export type MatchCommandErrorCode = 'WRONG_SIDE_TO_CLAIM' | 'GAME_OVER' | 'MATCH_STATE_INCONSISTENT';
+export type MatchCommandErrorCode = 'WRONG_SIDE_TO_CLAIM' | 'GAME_OVER' | 'ADJUDICATION_PENDING' | 'MATCH_STATE_INCONSISTENT';
 
 export interface MatchCommandError {
   readonly kind: 'command' | 'match';
@@ -111,7 +121,7 @@ export type ClaimTransition =
 
 export interface MatchIntegrityError {
   readonly kind: 'match';
-  readonly code: 'MATCH_STATE_INCONSISTENT' | 'GAME_OVER';
+  readonly code: 'MATCH_STATE_INCONSISTENT' | 'GAME_OVER' | 'ADJUDICATION_PENDING';
   readonly message: string;
 }
 
@@ -133,7 +143,8 @@ export type MatchReplayErrorCode =
   | 'REPLAY_EVENT_SEQUENCE_MISMATCH'
   | 'REPLAY_PLY_MISMATCH'
   | 'REPLAY_EVENT_FACTS_MISMATCH'
-  | 'REPLAY_MOVE_REJECTED';
+  | 'REPLAY_MOVE_REJECTED'
+  | 'REPLAY_ADJUDICATION_MISMATCH';
 
 export class MatchReplayError extends Error {
   readonly code: MatchReplayErrorCode;

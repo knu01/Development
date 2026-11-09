@@ -1,5 +1,5 @@
 import {
-  createInitialRuleState, createRuleState, evaluateAutomaticOutcome, positionKey, validateEnginePosition,
+  applyLegalMove, createInitialRuleState, createRuleState, evaluateAutomaticOutcome, isInCheck, legalMoves, positionKey, tryApplyMove, validateEnginePosition,
 } from '../engine';
 import type { Match, MatchInitialConfig, MatchPiece, PieceId } from './types';
 import { MatchConfigurationError } from './types';
@@ -34,12 +34,13 @@ export function createMatch(options: MatchInitialConfig): Match {
   }
 
   const key = positionKey(initialState);
+  const hasVerifiedInitialMateWitness = options.initialState === undefined && verifyStandardOpeningWitness(initialState);
   const match: Match = Object.freeze({
     gameId: options.gameId,
     initialState,
     state: initialState,
     positionHistory: Object.freeze([key]),
-    status: 'in-progress',
+    status: hasVerifiedInitialMateWitness ? 'in-progress' : 'adjudication-pending',
     result: null,
     ply: 0,
     nextEventSeq: 1,
@@ -49,4 +50,24 @@ export function createMatch(options: MatchInitialConfig): Match {
   });
   const automaticOutcome = evaluateAutomaticOutcome(initialState, match.positionHistory);
   return automaticOutcome ? appendResult(match, resultFromAutomaticOutcome(automaticOutcome)) : match;
+}
+
+function verifyStandardOpeningWitness(initialState: Match['state']): boolean {
+  const line = [
+    { from: 52, to: 36 }, { from: 12, to: 28 },
+    { from: 61, to: 34 }, { from: 1, to: 18 },
+    { from: 59, to: 31 }, { from: 6, to: 21 },
+    { from: 31, to: 13 },
+  ];
+  try {
+    let state = initialState;
+    for (const move of line) {
+      const applied = tryApplyMove(state, move);
+      if (!applied.ok) return false;
+      state = applyLegalMove(state, applied.move);
+    }
+    return state.sideToMove === 'black' && legalMoves(state).length === 0 && isInCheck(state, 'black');
+  } catch {
+    return false;
+  }
 }

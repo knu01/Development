@@ -2,6 +2,8 @@ import type { Move, MoveInput } from '../engine';
 import { claimDraw } from './claim-draw';
 import { commitMove } from './commit-move';
 import { createMatch } from './create-match';
+import { adjudicatePendingMatch, applyDefinitiveAdjudication } from './adjudicate-pending';
+import { appendResult } from './result-events';
 import type { Match, MatchEvent, MatchInitialConfig, MatchMoveEvent } from './types';
 import { MatchReplayError } from './types';
 
@@ -53,6 +55,11 @@ function eventsEqual(left: MatchEvent, right: MatchEvent): boolean {
   if (left.kind === 'result' && right.kind === 'result') {
     return left.result.outcome === right.result.outcome && left.result.reason === right.result.reason;
   }
+  if (left.kind === 'adjudication' && right.kind === 'adjudication') {
+    if (left.outcome !== right.outcome || left.matingSide !== right.matingSide) return false;
+    if (left.witness === null || right.witness === null) return left.witness === right.witness;
+    return left.witness.length === right.witness.length && left.witness.every((move, index) => movesEqual(move, right.witness![index]));
+  }
   return false;
 }
 
@@ -72,7 +79,7 @@ function replayFailure(message: string): never {
   throw new MatchReplayError('REPLAY_EVENT_FACTS_MISMATCH', message);
 }
 
-export function replayMatch(config: MatchInitialConfig, events: readonly MatchEvent[]): Match {
+export async function replayMatch(config: MatchInitialConfig, events: readonly MatchEvent[]): Promise<Match> {
   let match = createMatch(config);
   let index = 0;
 
@@ -94,6 +101,35 @@ export function replayMatch(config: MatchInitialConfig, events: readonly MatchEv
     }
 
     const previousEventCount = match.events.length;
+    if (recorded.kind === 'adjudication') {
+      if (match.status !== 'adjudication-pending' || recorded.ply !== match.ply) {
+        throw new MatchReplayError('REPLAY_ADJUDICATION_MISMATCH', 'Adjudication event does not follow a pending position.');
+      }
+      if (recorded.outcome === 'LIVE') {
+        if (!recorded.matingSide || !recorded.witness) {
+          throw new MatchReplayError('REPLAY_ADJUDICATION_MISMATCH', 'LIVE adjudication lacks a mating witness.');
+        }
+        const resolved = applyDefinitiveAdjudication(match, {
+          kind: 'LIVE', matingSide: recorded.matingSide, witness: recorded.witness, nodes: 0,
+          sideNodes: Object.freeze({ white: 0, black: 0 }),
+        });
+        if (!resolved) throw new MatchReplayError('REPLAY_ADJUDICATION_MISMATCH', 'LIVE witness is not a legal checkmate line.');
+        match = resolved;
+      } else {
+        const verified = await adjudicatePendingMatch(match);
+        if (verified.outcome.kind !== 'DEAD') {
+          throw new MatchReplayError('REPLAY_ADJUDICATION_MISMATCH', 'Recorded DEAD result could not be independently proven.');
+        }
+        match = verified.match;
+      }
+      const generated = match.events.slice(previousEventCount);
+      assertGeneratedEvents(events.slice(index), generated, 'adjudication/result');
+      index += generated.length;
+      continue;
+    }
+    if (match.status === 'adjudication-pending') {
+      throw new MatchReplayError('REPLAY_ADJUDICATION_MISMATCH', 'A move or claim appears before pending adjudication resolves.');
+    }
     if (recorded.kind === 'move') {
       if (recorded.ply !== match.ply + 1) {
         throw new MatchReplayError('REPLAY_PLY_MISMATCH', 'Move event ply does not follow the current Match ply.');

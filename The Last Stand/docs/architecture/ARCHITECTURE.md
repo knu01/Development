@@ -1,6 +1,6 @@
 # The Last Stand — Production Architecture
 
-**Status:** M1–M2.4 complete; M3.1 Match foundation and M3.2 draw adjudication implemented; complete dead-position detection remains unimplemented; stack approved.
+**Status:** M1–M2.4, M3.1, and M3.2 accepted for their documented scopes. M3.3 has experimental pending-adjudication and detector progress, but remains open; complete dead-position detection and performance acceptance are not established.
 
 ## Technology and project layout
 
@@ -27,9 +27,11 @@ docs/architecture/
 Development/Game/Prototypes/Claude-Prototype-0.1/Index.html  # immutable reference
 ```
 
-The engine implements ordinary moves, castling, en passant, promotion, checkmate and stalemate detection, threefold/fivefold repetition, and the 50/75-move rules. M3.2 stores repetition history in Match and verifies draw claims/results through replay. Complete dead-position detection remains an explicit unimplemented V1 requirement; no material-count shortcut is treated as equivalent. Narrative, presentation, and application UI remain outside the current implementation.
+The engine implements ordinary moves, castling, en passant, promotion, checkmate and stalemate detection, threefold/fivefold repetition, and the 50/75-move rules. M3.2 stores repetition history in Match and verifies draw claims/results through replay. An experimental bounded detector and pending Match workflow exist, but complete dead-position detection remains an open V1 requirement; no material-count shortcut is treated as equivalent. Narrative, presentation, and application UI remain outside the current implementation.
 
 ## System boundaries
+
+**Team ownership (owner-updated 2026-11-09):** Codex is Engineering Lead for Engine/chess rules, Match/adjudication, dead-position detection, game state and authoritative events, AI/multiplayer logic, backend architecture/tests, performance, and correctness. Claude owns frontend implementation, visual design, UI/UX, animations, and presentation. The frontend communicates through documented command APIs and event contracts. It may request actions and render authoritative outputs, but cannot determine legality or match outcomes. Engine and Match remain authoritative.
 
 - **Chess Engine:** Pure rules over `RuleState`. Owns legal moves, state transitions, check, canonical position keys, and pure draw-condition evaluation. Repetition history is supplied explicitly by Match and is never stored in or inferred by the Engine. Every operation is immutable. No piece IDs, match history ownership, dialogue, DOM, or audio.
 - **Match/Event System:** Owns match identity, persistent piece IDs, append-only authoritative move/claim/result events, repetition history, result state, and replay. It supplies its history to Engine draw evaluation and uses Engine's single legal-move/apply path. Complete dead-position detection remains unimplemented.
@@ -109,3 +111,12 @@ Both files were read for SHA-256 verification on 2026-11-07. They are different 
 | Downloaded reference | `C:\Users\knu\Downloads\The Last Stand.html` | 50,701 bytes | `2C30E1FAA4F178C3BC8C419BC7A6D3A9C961C3D1504C23F09A313A79EFF2D6BF` |
 
 Treat both as read-only. Port selected cinematic scripts, canvas drawing, visual styling, glyph choices, and synthesized audio by adapting or re-creating them in production modules; never import the prototype page or edit either source file. Recheck hashes before any future acceptance that claims preservation.
+
+## M3.3 experimental implementation status (2026-11-09)
+
+M3.3 remains open. Match has an immutable pending-adjudication state and blocks moves/claims while pending. A terminable browser worker runs bounded dead-position analysis; definitive LIVE resumes play and definitive DEAD records a draw. Cancellation, errors, and resource limits leave the match pending. Each move returns a nonterminal match to pending. The standard opening may start immediately because a legal mating witness is verified; custom nonterminal starts are pending.
+
+Replay is asynchronous. It reconstructs pending transitions, checks LIVE witnesses with the production legal-move engine, and reruns exhaustive detection before accepting DEAD. Adjudication and result events have deterministic sequence ordering. The detector uses a position identity containing placement, side to move, castling rights, and legal en-passant availability, excluding clocks and Match piece IDs. It searches each mating side independently, validates LIVE witnesses through production move application, and returns UNDETERMINED on cancellation, search errors, or configured limits. The capability remains experimental; the legacy `assessMatingPotential` interface remains `NOT_IMPLEMENTED`.
+
+Current bounded benchmark runs demonstrate unresolved positions: K+N-v-K and the Buchanan a4 fixture each hit the 10-second per-side budget; same-colour K+B-v-K+B also hit the limit. K-v-K exhausted 7,224 states per side and returned DEAD. Heap deltas were noisy post-run measurements and do not establish peak memory. Retries restart from the root; resumable background progress, low-end-device measurements, memory distributions, exhaustive small-material comparison, and Chromium verification remain outstanding. These gaps prevent M3.3 acceptance and must not be addressed by weakening the strict policy.
+

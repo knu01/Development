@@ -1,6 +1,6 @@
 import { isInCheck, legalMoves } from '../engine';
 import type { Move, MoveInput, PieceType, PromotionPieceType, Side } from '../engine';
-import { claimDraw, commitMove, createMatch } from '../match';
+import { adjudicatePendingMatch, claimDraw, commitMove, createMatch } from '../match';
 import type { Match, MatchEvent } from '../match';
 
 const glyph: Record<Side, Record<PieceType, string>> = {
@@ -18,6 +18,7 @@ export function mountGame(root: HTMLElement) {
   let selected: number | null = null;
   let pendingPromotion: Move[] = [];
   let notice = '';
+  let analysisController: AbortController | null = null;
 
   root.innerHTML = `<div class="shell">
     <header class="topbar"><a class="wordmark" href="#">THE LAST STAND</a><span class="edition">LOCAL MATCH · CLASSIC CHESS</span></header>
@@ -27,7 +28,7 @@ export function mountGame(root: HTMLElement) {
         <div class="turn-card" data-role="status"></div>
         <div class="board-frame"><div class="board" role="grid" aria-label="Chess board" data-role="board"></div></div>
         <div class="claim-row"><button class="button quiet" data-claim="threefold">Claim threefold draw</button><button class="button quiet" data-claim="fifty_move">Claim 50-move draw</button></div>
-        <p class="notice" data-role="notice" aria-live="polite"></p>
+        <p class="notice" data-role="notice" aria-live="polite"></p><button class="button quiet" data-action="retry-adjudication" hidden>Retry position check</button>
       </section>
       <aside class="side-panel">
         <section class="panel"><p class="eyebrow">THE RECORD</p><h2>Move history</h2><ol class="history" data-role="history"></ol></section>
@@ -55,7 +56,9 @@ export function mountGame(root: HTMLElement) {
     const checked = !finished && isInCheck(match.state, match.state.sideToMove);
     status.innerHTML = finished
       ? `<strong>${resultText()}</strong><span>Game complete</span>`
-      : `<strong>${checked ? 'Check — ' : ''}${match.state.sideToMove === 'white' ? 'White' : 'Black'} to move</strong><span>Move ${match.state.fullmoveNumber}</span>`;
+      : match.status === 'adjudication-pending'
+        ? `<strong>Checking position…</strong><span>Moves are paused until the draw check is conclusive.</span>`
+        : `<strong>${checked ? 'Check — ' : ''}${match.state.sideToMove === 'white' ? 'White' : 'Black'} to move</strong><span>Move ${match.state.fullmoveNumber}</span>`;
     board.replaceChildren();
     const legalTargets = selected === null ? [] : legalMoves(match.state, selected);
     for (let square = 0; square < 64; square += 1) {
@@ -69,6 +72,7 @@ export function mountGame(root: HTMLElement) {
       if (square % 8 === 0) button.insertAdjacentHTML('beforeend', `<span class="coordinate rank">${8 - Math.floor(square / 8)}</span>`);
       if (Math.floor(square / 8) === 7) button.insertAdjacentHTML('beforeend', `<span class="coordinate file">${String.fromCharCode(97 + square % 8)}</span>`);
       if (piece) button.insertAdjacentHTML('beforeend', `<span class="piece ${piece.side}">${glyph[piece.side][piece.type]}</span>`);
+      button.disabled = match.status !== 'in-progress';
       button.addEventListener('click', () => clickSquare(square)); board.append(button);
     }
     history.replaceChildren();
@@ -79,6 +83,9 @@ export function mountGame(root: HTMLElement) {
       history.append(li);
     }
     noticeNode.textContent = notice;
+    const retry = root.querySelector<HTMLButtonElement>('[data-action="retry-adjudication"]')!;
+    retry.hidden = match.status !== 'adjudication-pending' || !notice;
+    root.querySelectorAll<HTMLButtonElement>('[data-claim]').forEach((button) => { button.disabled = match.status !== 'in-progress'; });
   }
 
   function formatMove(move: Move) {
@@ -89,7 +96,20 @@ export function mountGame(root: HTMLElement) {
   function commit(input: MoveInput) {
     const transition = commitMove(match, input);
     if (!transition.ok) { notice = 'That move is not legal.'; selected = null; render(); return; }
-    match = transition.match; selected = null; notice = ''; render();
+    match = transition.match; selected = null; notice = ''; render(); void runAdjudication();
+  }
+
+  async function runAdjudication() {
+    if (match.status !== 'adjudication-pending') return;
+    analysisController?.abort();
+    const controller = new AbortController(); analysisController = controller;
+    const analyzed = match;
+    const transition = await adjudicatePendingMatch(analyzed, { signal: controller.signal });
+    if (controller.signal.aborted || match !== analyzed) return;
+    match = transition.match;
+    if (transition.outcome.kind === 'UNDETERMINED') notice = 'The draw check needs more analysis. Play remains paused; retry when ready.';
+    else notice = '';
+    render();
   }
 
   function choosePromotion(moves: Move[]) {
@@ -105,7 +125,7 @@ export function mountGame(root: HTMLElement) {
   }
 
   function clickSquare(square: number) {
-    if (match.status === 'finished') return;
+    if (match.status !== 'in-progress') return;
     if (selected !== null) {
       const target = legalMoves(match.state, selected).filter((move) => move.to === square);
       if (target.length) { if (target[0].promotion) choosePromotion(target); else commit({ from: selected, to: square }); return; }
@@ -115,12 +135,15 @@ export function mountGame(root: HTMLElement) {
     notice = ''; render();
   }
 
-  root.querySelector('[data-action="restart"]')!.addEventListener('click', () => { gameNumber += 1; match = createMatch({ gameId: `local-${gameNumber}` }); selected = null; notice = ''; render(); });
+  root.querySelector('[data-action="restart"]')!.addEventListener('click', () => { analysisController?.abort(); gameNumber += 1; match = createMatch({ gameId: `local-${gameNumber}` }); selected = null; notice = ''; render(); void runAdjudication(); });
+  root.querySelector('[data-action="retry-adjudication"]')!.addEventListener('click', () => { notice = ''; render(); void runAdjudication(); });
   root.querySelectorAll<HTMLButtonElement>('[data-claim]').forEach((button) => button.addEventListener('click', () => {
+    if (match.status !== 'in-progress') return;
     const transition = claimDraw(match, { claimant: match.state.sideToMove, basis: button.dataset.claim as 'threefold' | 'fifty_move' });
     if (transition.ok) match = transition.match;
     notice = transition.ok && transition.claimEvent.outcome === 'accepted' ? '' : 'That draw claim is not available in this position.'; render();
   }));
   render();
+  void runAdjudication();
   return { getMatch: () => match, destroy: () => { root.replaceChildren(); } };
 }

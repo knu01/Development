@@ -35,7 +35,7 @@ export type MatingPotentialResult =
   | { readonly kind: 'cannot-mate' }
   | { readonly kind: 'undetermined'; readonly reason: 'NOT_IMPLEMENTED' };
 
-export const ENGINE_CAPABILITIES = Object.freeze({ deadPositionDetection: 'unimplemented' as const });
+export const ENGINE_CAPABILITIES = Object.freeze({ deadPositionDetection: 'experimental' as const });
 
 /**
  * FIDE repetition identity: placement, side to move, castling rights, and an

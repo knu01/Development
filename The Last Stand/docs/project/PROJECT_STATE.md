@@ -1,7 +1,14 @@
 # The Last Stand — Project State
 
-**Last updated:** 2026-11-08
-**Status:** M1–M3.2 implemented and accepted for their documented scopes. M3.3 dead-position detection and pending adjudication are authorized and in progress.
+**Last updated:** 2026-11-09
+**Status:** M1–M3.2 implemented and accepted for their documented scopes. M3.3 has experimental detector, pending Match, and replay progress; M3.3 remains open and is not accepted complete.
+
+## Team ownership (owner-updated 2026-11-09)
+
+- **Codex — Engineering Lead:** owns Engine/chess rules, Match/adjudication, dead-position detection, game state and authoritative events, AI/multiplayer logic, backend architecture and tests, performance, and correctness.
+- **Claude — Frontend Lead:** owns frontend implementation, visual design, UI/UX, animations, and presentation. Codex must not independently redesign or take ownership of this work.
+- Coordinate across the boundary through documented APIs and event contracts. Frontend code submits commands and renders results; it never decides move legality, adjudication, or match results. Match and Engine remain the sole authority for those decisions.
+- These responsibilities supersede earlier role descriptions in historical handoffs. No implementation change is implied by this ownership update.
 
 ## Start here
 
@@ -20,8 +27,9 @@ Read this file first, then [decisions](DECISIONS.md), the relevant [development 
 | M2.4 — regression/perft hardening | **Accepted for documented scope** | Six published fixtures verified through depth 3. Depth 4 and deeper were not run. |
 | M3.1 — Match foundation | **Complete, accepted** | Stable piece IDs, immutable move events, captures, and deterministic replay. |
 | M3.2 — draw rules and adjudication | **Complete, accepted** | Match-owned repetition history, claims, automatic repetition/move-count draws, stalemate/checkmate, event replay verification, and explicit unimplemented dead-position interface. |
+| M3.3 — dead-position adjudication | **Experimental progress; open** | Bounded exhaustive detector, pending Match gate, worker execution, definitive adjudication events, witness validation, and replay checks. Resource-limited searches stay pending as `UNDETERMINED`; completeness and performance acceptance remain open. |
 
-**M3.3 is authorized.** Implement pending-adjudication infrastructure and a sound dead-position detector in connected increments. M3.3-A blocks additional moves while the result is unresolved; M3.3-B may return only verified `LIVE`, proven `DEAD`, or `UNDETERMINED`. Continue analysis while unresolved; do not guess or silently release play. The owner explicitly approved this strict policy.
+**M3.3 is authorized and remains open.** `Match` blocks moves and claims while adjudication is pending. The browser runs analysis in a terminable worker; definitive `LIVE`/`DEAD` results are recorded, and replay verifies witnesses or independently repeats exhaustive `DEAD` analysis. Cancellation, errors, and resource limits leave the Match pending. A verified mating line lets the standard starting position begin immediately. Custom initial positions are pending. Retries currently restart analysis; continuous continuation across resource-limited runs is not implemented.
 
 ## Architecture in force
 
@@ -29,12 +37,12 @@ Read this file first, then [decisions](DECISIONS.md), the relevant [development 
 - Runtime dependency-free chess engine; Node and Chromium tests.
 - Engine owns immutable `RuleState` and chess rule calculations. Match owns identities, authoritative events, actual repetition history, claims/results, and replay.
 - Match supplies position history explicitly to pure engine draw evaluation. Repetition context is **not** owned by `RuleState` and is never inferred from FEN.
-- Narrative Resolver, presentation/queues, UI, audio, cinematic, AI, and multiplayer are not implemented.
+- A first local two-player browser UI exists. Narrative Resolver, presentation/queues, audio, cinematic, AI, and multiplayer are not implemented.
 - Both original prototype copies remain read-only. Their recorded hashes and locations are in [architecture](../architecture/ARCHITECTURE.md).
 
 ## Required V1 work still outstanding
 
-- **Complete dead-position detection is mandatory before V1 can be called fully standard-rules complete.** Current `assessMatingPotential` returns `undetermined / NOT_IMPLEMENTED`; it must never guess `DEAD` or `LIVE`. No material-only shortcut is acceptable.
+- **Complete dead-position detection is mandatory before V1 can be called fully standard-rules complete.** `detectDeadPosition` is experimental and may return `UNDETERMINED` at its configured time/node limits; `assessMatingPotential` remains an explicit `NOT_IMPLEMENTED` adapter. The detector must never guess `DEAD` or `LIVE`. No material-only shortcut is acceptable.
 - Narrative Resolver and deterministic, versioned reaction records.
 - Text presentation and completion queue, including grouping, persistence, and result-screen behavior.
 - Opening cinematic integration, UI, and minimal text Chronicle.
@@ -44,7 +52,7 @@ Approved but still awaiting implementation includes the owner-approved product d
 
 ## Risks and unresolved owner choices
 
-- Dead-position computation can be expensive. The owner-approved policy is to continue background analysis and prevent a subsequent move until a definitive result is established. The detector must evaluate both sides and only return `DEAD` with sound proof.
+- Dead-position computation is too slow for some positions: K+N-v-K and the Buchanan a4 fixture hit a 10-second per-side budget; same-colour K+B-v-K+B also remains unresolved. The browser worker terminates at cancellation/resource limits and the Match remains pending. Retries restart from the root, so continuous background progress remains an implementation gap.
 - Classification thresholds, grouping policy P1/P2, text placement, dismissal completion, minimum readable duration, animation triggers, and Chronicle perspective choice remain open as listed in [DECISIONS.md](DECISIONS.md).
 - Full perft verification beyond depth 3 is absent from the accepted M2.4 evidence.
 - The supplied Revision 2 spec has a stale “Draft for Owner Approval” footer despite later owner approval. The owner’s later approval governs; the file itself has not been edited. The current spec copy is outside this repository and should be added by the owner when ready for shared repository access.
@@ -55,9 +63,9 @@ The working directory is `D:\Development\The Last Stand`, while Git metadata is 
 
 ## Immediate next steps
 
-1. Complete M3.3-A pending adjudication and replay integration.
-2. Complete M3.3-B detector, exhaustive small-material oracle checks, and difficult-position benchmarks.
-3. Resume playable game development after M3.3 review. The full Revision 2 text remains outside the repository; relevant available requirements are summarized in this memory set.
+1. Improve detector practicality without weakening the strict `UNDETERMINED` policy; implement resumable worker analysis or sound pruning and measure it.
+2. Complete the Revision 2 experiment: exhaustive small-material comparison, frozen corpus, low-end device measurements, node/time/memory distributions, and `UNDETERMINED` share.
+3. Verify worker cancellation in Chromium and complete remaining Match/replay edge cases. M3.3 remains open until every acceptance requirement is met.
 
 ## Evidence links
 

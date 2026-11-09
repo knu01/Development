@@ -34,6 +34,7 @@ function appendClaim(match: Match, event: MatchClaimEvent): Match {
 
 export function claimDraw(match: Match, input: ClaimDrawInput): ClaimTransition {
   if (match.status === 'finished') return commandFailure(match, 'GAME_OVER', 'The match is already finished.');
+  if (match.status === 'adjudication-pending') return commandFailure(match, 'ADJUDICATION_PENDING', 'Dead-position adjudication is pending.');
   if (input.claimant !== match.state.sideToMove) {
     return commandFailure(match, 'WRONG_SIDE_TO_CLAIM', 'Only the side to move may claim a draw.');
   }

@@ -2,7 +2,7 @@ import { evaluateAutomaticOutcome, positionKey, repetitionCount, tryApplyMove } 
 import type { Match, MatchIntegrityError, MatchPiece, MatchTransition, MoveInput, PieceId } from './types';
 import { appendResult, resultFromAutomaticOutcome } from './result-events';
 
-function integrityFailure(match: Match, message: string, code: MatchIntegrityError['code'] = 'MATCH_STATE_INCONSISTENT'): MatchTransition {
+function integrityFailure(match: Match, message: string, code: MatchIntegrityError['code'] | 'ADJUDICATION_PENDING' = 'MATCH_STATE_INCONSISTENT'): MatchTransition {
   const error: MatchIntegrityError = Object.freeze({
     kind: 'match',
     code,
@@ -18,6 +18,7 @@ function updateRecord(records: Record<PieceId, MatchPiece>, id: PieceId, update:
 
 export function commitMove(match: Match, input: MoveInput): MatchTransition {
   if (match.status === 'finished') return integrityFailure(match, 'The match is already finished.', 'GAME_OVER');
+  if (match.status === 'adjudication-pending') return integrityFailure(match, 'Dead-position adjudication is pending.', 'ADJUDICATION_PENDING');
   const applied = tryApplyMove(match.state, input);
   if (!applied.ok) {
     return Object.freeze({
@@ -94,6 +95,7 @@ export function commitMove(match: Match, input: MoveInput): MatchTransition {
   const nextMatch: Match = Object.freeze({
     ...match,
     state: applied.state,
+    status: 'adjudication-pending',
     positionHistory,
     ply: match.ply + 1,
     nextEventSeq: match.nextEventSeq + 1,

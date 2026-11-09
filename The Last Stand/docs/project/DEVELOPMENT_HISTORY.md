@@ -146,3 +146,36 @@ Claude's handoff includes a naive Python reachability experiment (scratch enviro
 The [decision register](DECISIONS.md) is the canonical index. Important unresolved implementation/design items include the detector's formal rules model and `UNDETERMINED` behavior; acceptable Heroic/Unknown/Ordinary shares after a classification simulator; supported-capture threshold; grouping P1 versus P2; text placement; dismissal/minimum readability semantics; animation triggers; and Chronicle perspective presentation. Resignation inclusion is an owner-open V1 scope item in Revision 2 but is not in M3.2; do not assume it has been approved for implementation. Online play remains V1.5 or later.
 
 The current production architecture is [ARCHITECTURE.md](../architecture/ARCHITECTURE.md). For future milestones, add exact dates, files, commands, test counts, acceptance, and unresolved issues to this history only when verified.
+
+### M3.3 — Experimental pending adjudication and detector progress (2026-11-09)
+
+**Status:** Experimental progress only; M3.3 remains open and is not accepted complete.
+
+**Implementation:** `src/engine/dead-position.ts` provides bounded exhaustive search with independent prospective mating-side searches, position identity based on placement/side/castling/legal en-passant (excluding clocks and Match IDs), production-engine replay of LIVE witnesses, and UNDETERMINED on cancellation, errors, or resource limits. `src/engine/dead-position-runner.ts` and `dead-position.worker.ts` provide terminable browser-worker execution. `src/match/adjudicate-pending.ts` and Match transitions gate moves/claims while pending, resume after LIVE, and record DEAD as a draw. Replay reconstructs pending states, checks LIVE witnesses, reruns search for DEAD, and enforces event ordering. UI disables play while pending and offers retry after unresolved analysis. Retries currently restart from the root.
+
+The standard initial board begins in progress only because a known legal mating line is verified through the production move engine. Nonterminal custom starts begin pending. This is an implementation expedient and does not claim the initial position itself is dead-position-adjudicated.
+
+**Detector benchmark snapshot:** One local Windows development-host run, configured for a maximum of 800,000 nodes and 10 seconds per side. Values are measurements, not a device-independent guarantee. Heap delta is a post-run heap observation affected by garbage collection, not peak memory.
+
+| Fixture | Result | Visited nodes (white / black) | Elapsed | Heap delta |
+|---|---|---:|---:|---:|
+| K-v-K | DEAD | 7,224 / 7,224 | 6,812.5 ms | +28,482,576 B |
+| Standard start after 1.e4 | LIVE | 1,342 / 0 | 768.4 ms | -3,900,000 B approx. |
+| K+N-v-K | UNDETERMINED, resource limit | 31,352 / 0 | 10,000.6 ms | +729,736 B |
+| Ambrona FUN 2022 Position 1 | DEAD | 11,802 / 11,802 | 18,727.4 ms | -10,707,168 B |
+| Buchanan Position 2, pawn a4 | UNDETERMINED, resource limit | 43,094 / 0 | 10,000.2 ms | +38,654,992 B |
+| Buchanan Position 2, pawn a5 | LIVE | 11,435 / 0 | 5,568.6 ms | +65,379,592 B |
+| Queen-v-K | LIVE | 11,103 / 0 | 6,135.2 ms | not captured reliably |
+| Position with castling rights | LIVE | 8,554 / 0 | 5,016.6 ms | not captured reliably |
+| Legal en-passant position | LIVE | 151 / 0 | 23 ms | not captured reliably |
+| Same-colour K+B-v-K+B | UNDETERMINED, resource limit | 26,643 / 0 | 9,999.9 ms | not captured reliably |
+
+Ambrona fixtures are derived from the position diagrams and descriptions in [the FUN 2022 paper](https://drops.dagstuhl.de/opus/volltexte/2022/15972/pdf/LIPIcs-FUN-2022-2.pdf), then represented as FEN for this experiment. Both difficult unresolved cases are reported; no timeout was omitted. This is a single snapshot and not the approved corpus experiment: no low-end device, p99/peak-memory distribution, corpus-wide UNDETERMINED rate, or exhaustive small-material oracle comparison was completed.
+
+**Verification:** Earlier full Node run passed 132 tests across 16 files; TypeScript no-emit check and Vite production build passed. These precede the final benchmark-fixture edits and must be rerun before any completion claim. Browser tests could not run because the configured Playwright Chromium executable is absent. The new browser worker cancellation test is present but therefore unverified in Chromium. Final verification outcome is recorded in the current task report, not inferred from prior runs.
+
+**Remaining acceptance work:** rerun the full Node suite, TypeScript, and production build after final edits; execute browser tests where Chromium is available; make search practically viable or show the approved experiment evidence; address resumable worker analysis; measure peak memory and low-end performance; and complete exhaustive small-material comparison. Strict `UNDETERMINED` behavior remains in force.
+
+### Team responsibility update (owner, 2026-11-09)
+
+The owner assigned Codex as Engineering Lead, responsible for Engine and chess rules, Match/adjudication, dead-position detection, game state and authoritative events, AI/multiplayer logic, backend architecture and tests, performance, and correctness. Claude owns frontend implementation, visual design, UI/UX, animations, and presentation. Cross-boundary work is coordinated through documented APIs and event contracts. Frontend behavior may submit commands and render state/events but cannot become authoritative for legality or match results. This supersedes earlier role descriptions and changes no implementation code.

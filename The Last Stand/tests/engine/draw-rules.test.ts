@@ -63,7 +63,7 @@ describe('draw-rule engine facts', () => {
   });
 
   it('keeps dead-position detection explicitly unavailable instead of guessing', () => {
-    expect(ENGINE_CAPABILITIES.deadPositionDetection).toBe('unimplemented');
+    expect(ENGINE_CAPABILITIES.deadPositionDetection).toBe('experimental');
     expect(assessMatingPotential(parseFen('4k3/8/8/8/8/8/8/4K3 w - - 0 1'), 'white', {
       maxNodes: 1000, timeBudgetMs: 10,
     })).toEqual({ kind: 'undetermined', reason: 'NOT_IMPLEMENTED' });

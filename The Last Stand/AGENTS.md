@@ -16,7 +16,9 @@ The project state names the current milestone and active constraints. This file 
 
 - The owner has final authority. Preserve approved decisions unless concrete evidence shows a contradiction; explain the evidence and trade-offs before proposing a change.
 - Challenge technical proposals with evidence. After one round of unresolved disagreement, present the owner with the options, risks, and a recommendation.
-- Roles: Codex implements and verifies; Claude reviews architecture/specifications and provides independent technical scrutiny; ChatGPT coordinates, consolidates, and handles creative work. The owner relays material between agents.
+- Roles (owner-updated 2026-11-09): Codex is Engineering Lead and owns the chess engine/rules, Match and adjudication systems, dead-position detection, game state and authoritative events, AI/multiplayer logic, backend architecture/tests, and performance/correctness. Claude owns frontend implementation, visual design, UI/UX, animations, and presentation. ChatGPT coordinates, consolidates, and handles creative work. The owner relays material between agents.
+- Do not independently redesign or take ownership of frontend presentation work. Coordinate with Claude through documented APIs and event contracts. The frontend may issue commands and render authoritative state/events, but must never decide chess legality, adjudication, or match results.
+- Keep the Engine/Match boundary authoritative: frontend requests pass through Match, Match uses Engine's canonical legal-move and state-transition path, and authoritative outcomes are produced and verified by backend logic. Document contract changes before cross-boundary implementation; keep one active writer per file.
 - Keep one active writer per file. Coordinate before overlapping edits.
 - Do not claim work is complete without the required verification. Never invent test results, dates, decisions, or implementation facts.
 - Preserve both original prototype copies. Treat them as read-only references.
